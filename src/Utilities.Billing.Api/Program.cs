@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Utilities.Billing.Api.Services;
+using Utilities.Billing.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddGrpc();
+
+builder.Services.AddDbContext<BillingDbContext>(o =>
+{
+    o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
+        .UseSnakeCaseNamingConvention();
+});
+builder.Services.AddHostedService<BillingDbContextMigrator>();
 
 var app = builder.Build();
 
