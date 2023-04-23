@@ -2,8 +2,165 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
+import "google/api/annotations.proto";
+
 package billing;
 
 service BillingService 
 {
+  rpc AddInvoice(AddInvoiceRequest) returns (AddInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/v1/invoice"
+      body: "*"
+    };
+  }
+
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse) {
+    option (google.api.http) = {
+      get: "/v1/invoice/{id}"
+    };
+  }
+
+  rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
+    option (google.api.http) = {
+      get: "/v1/invoice"
+    };
+  }
+
+  rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
+    option (google.api.http) = {
+      put: "/v1/invoice/{invoice.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse) {
+    option (google.api.http) = {
+      delete: "/v1/invoice/{id}"
+    };
+  }
+
+  rpc AddPayment(AddPaymentRequest) returns (AddPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payment"
+      body: "*"
+    };
+  }
+
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse) {
+    option (google.api.http) = {
+      get: "/v1/payment/{id}"
+    };
+  }
+
+  rpc GetPayments(GetPaymentsRequest) returns (GetPaymentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/payment"
+    };
+  }
+
+  rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse) {
+    option (google.api.http) = {
+      put: "/v1/payment/{payment.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeletePayment(DeletePaymentRequest) returns (DeletePaymentResponse) {
+    option (google.api.http) = {
+      delete: "/v1/payment/{id}"
+    };
+  }
+}
+
+/* Invoice */
+
+message Invoice {
+  optional uint64 id = 1;
+  double amount = 4;
+}
+
+message AddInvoiceRequest {
+  Invoice invoice = 1;
+}
+
+message AddInvoiceResponse {
+  uint64 id = 1;
+}
+
+message GetInvoiceRequest {
+  uint64 id = 1;
+}
+
+message GetInvoiceResponse {
+  Invoice invoice = 1;
+}
+
+message GetInvoicesRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetInvoicesResponse {
+  repeated Invoice invoices = 1;
+}
+
+message UpdateInvoiceRequest {
+  Invoice invoice = 1;
+}
+
+message UpdateInvoiceResponse {
+}
+
+message DeleteInvoiceRequest{
+  uint64 id = 1;
+}
+
+message DeleteInvoiceResponse {
+}
+
+/* Payment */
+
+message Payment {
+  optional uint64 id = 1;
+  double amount = 4;
+}
+
+message AddPaymentRequest {
+  Payment payment = 1;
+}
+
+message AddPaymentResponse {
+  uint64 id = 1;
+}
+
+message GetPaymentRequest {
+  uint64 id = 1;
+}
+
+message GetPaymentResponse {
+  Payment payment = 1;
+}
+
+message GetPaymentsRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetPaymentsResponse {
+  repeated Payment items = 1;
+}
+
+message UpdatePaymentRequest {
+  Payment payment = 1;
+}
+
+message UpdatePaymentResponse {
+}
+
+message DeletePaymentRequest {
+  uint64 id = 1;
+}
+
+message DeletePaymentResponse {
 }

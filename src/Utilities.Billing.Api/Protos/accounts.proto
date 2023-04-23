@@ -1,0 +1,241 @@
+syntax = "proto3";
+
+option csharp_namespace = "Utilities.Billing.Api.Protos";
+
+import "google/api/annotations.proto";
+
+package billing;
+
+service AccountsService 
+{
+  rpc AddAccountType(AddAccountTypeRequest) returns (AddAccountTypeResponse) {
+    option (google.api.http) = {
+      post: "/v1/account-type"
+      body: "*"
+    };
+  }
+
+  rpc GetAccountTypes(GetAccountTypesRequest) returns (GetAccountTypesResponse) {
+    option (google.api.http) = {
+      get: "/v1/account-type"
+    };
+  }
+
+  rpc GetAccountType(GetAccountTypeRequest) returns (GetAccountTypeResponse) {
+    option (google.api.http) = {
+      get: "/v1/account-type/{id}"
+    };
+  }
+
+  rpc UpdateAccountType(UpdateAccountTypeRequest) returns (UpdateAccountTypeResponse) {
+    option (google.api.http) = {
+      put: "/v1/account-type/{accountType.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAccountType(DeleteAccountTypeRequest) returns (DeleteAccountTypeResponse) {
+    option (google.api.http) = {
+      delete: "/v1/account-type/{id}"
+    };
+  }
+
+  rpc AddAccount(AddAccountRequest) returns (AddAccountResponse) {
+    option (google.api.http) = {
+      post: "/v1/account"
+      body: "*"
+    };
+  }
+
+  rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse) {
+    option (google.api.http) = {
+      get: "/v1/account"
+    };
+  }
+
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {
+    option (google.api.http) = {
+      get: "/v1/account/{id}"
+    };
+  }
+
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
+    option (google.api.http) = {
+      put: "/v1/account/{account.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {
+    option (google.api.http) = {
+      delete: "/v1/account/{id}"
+    };
+  }
+
+  rpc GetAccountHolder(GetAccountHolderRequest) returns (GetAccountHolderResponse) {
+    option (google.api.http) = {
+      get: "/v1/account-holder/{id}"
+    };
+  }
+
+  rpc AddAccountHolder(AddAccountHolderRequest) returns (AddAccountHolderResponse) {
+    option (google.api.http) = {
+      post: "/v1/account-holder"
+      body: "*"
+    };
+  }
+
+  rpc UpdateAccountHolder(UpdateAccountHolderRequest) returns (UpdateAccountHolderResponse) {
+    option (google.api.http) = {
+      put: "/v1/account-holder/{accountHolder.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAccountHolder(DeleteAccountHolderRequest) returns (DeleteAccountHolderResponse) {
+    option (google.api.http) = {
+      delete: "/v1/account-holder/{id}"
+    };
+  }
+
+  rpc GetAccountHolders(GetAccountHoldersRequest) returns (GetAccountHoldersResponse) {
+    option (google.api.http) = {
+      get: "/v1/account-holder"
+    };
+  }
+}
+
+/* Account Type */
+
+message AccountType {
+  optional uint64 id = 1;
+  string name = 2;
+}
+
+message GetAccountTypeRequest {
+  uint64 id = 1;
+}
+
+message GetAccountTypeResponse {
+  AccountType accountType = 1;
+}
+message GetAccountTypesRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetAccountTypesResponse {
+  repeated AccountType accountTypes = 1;
+}
+
+message AddAccountTypeRequest {
+  AccountType accountType = 1;
+}
+
+message AddAccountTypeResponse {
+  uint64 id = 1;
+}
+
+message UpdateAccountTypeRequest {
+  AccountType accountType = 1;
+}
+
+message UpdateAccountTypeResponse {
+}
+
+message DeleteAccountTypeRequest {
+  uint64 id = 1;
+}
+
+message DeleteAccountTypeResponse {
+}
+
+/* Account Holder */
+
+message AccountHolder {
+  optional uint64 id = 1;
+}
+
+message GetAccountHolderRequest {
+  uint64 id = 1;
+}
+
+message GetAccountHolderResponse {
+  AccountHolder accountHolder =  1;
+}
+
+message GetAccountHoldersRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetAccountHoldersResponse {
+  repeated AccountHolder accountHolders = 1;
+}
+
+message AddAccountHolderRequest {
+  AccountHolder accountHolder = 1;
+}
+
+message AddAccountHolderResponse {
+  uint64 id = 1;
+}
+
+message UpdateAccountHolderRequest {
+  AccountHolder accountHolder = 1;
+}
+
+message UpdateAccountHolderResponse {
+}
+
+message DeleteAccountHolderRequest {
+  uint64 id = 1;
+}
+
+message DeleteAccountHolderResponse {
+}
+
+/* Account */
+
+message Account {
+  uint64 id = 1;
+}
+
+message GetAccountsRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetAccountsResponse {
+  repeated Account accounts = 1;
+}
+
+message GetAccountRequest {
+  uint64 id = 1;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+}
+
+message AddAccountRequest {
+  Account account = 1;
+}
+
+message AddAccountResponse {
+  uint64 id = 1;
+}
+
+message UpdateAccountRequest {
+  Account account = 1;
+}
+
+message UpdateAccountResponse { 
+}
+
+message DeleteAccountRequest {
+  uint64 id = 1;
+}
+
+message DeleteAccountResponse {
+}
