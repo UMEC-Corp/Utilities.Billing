@@ -4,12 +4,24 @@ using Microsoft.OpenApi.Models;
 using Utilities.Billing.Api.Interceptors;
 using Utilities.Billing.Api.Services;
 using Utilities.Billing.Data;
+using Winton.Extensions.Configuration.Consul;
 using BillingService = Utilities.Billing.Api.Services.BillingService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Additional configuration is required to successfully run gRPC on macOS.
 // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
+builder.Configuration
+    .AddConsul($"common/appsettings.{builder.Environment.EnvironmentName}.json", options =>
+    {
+        options.ReloadOnChange = true;
+        options.Optional = true;
+    })
+    .AddConsul($"{builder.Environment.ApplicationName}/appsettings.{builder.Environment.EnvironmentName}.json", options =>
+    {
+        options.ReloadOnChange = true;
+        options.Optional = true;
+    });
 
 // Add services to the container.
 builder.Services.AddGrpc(o =>

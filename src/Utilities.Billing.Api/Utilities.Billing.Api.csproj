@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Orleans.Client" Version="7.1.2" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="Winton.Extensions.Configuration.Consul" Version="3.3.0" />
   </ItemGroup>
 
   <ItemGroup>

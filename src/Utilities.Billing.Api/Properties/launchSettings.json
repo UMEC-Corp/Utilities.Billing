@@ -3,6 +3,7 @@
     "Utilities.Billing.Api": {
       "commandName": "Project",
       "environmentVariables": {
+        "CONSUL_HTTP_ADDR": "localhost:8503",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
