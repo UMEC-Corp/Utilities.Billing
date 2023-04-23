@@ -1,4 +1,4 @@
-﻿namespace Medlama.Common.Data;
+﻿namespace Utilities.Billing.Data;
 
 public interface ISoftDelible
 {

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Medlama.Common.Data;
+namespace Utilities.Billing.Data;
 public static class Extensions
 {
     public static ModelBuilder AddSoftDeleteFilters(this ModelBuilder modelBuilder)

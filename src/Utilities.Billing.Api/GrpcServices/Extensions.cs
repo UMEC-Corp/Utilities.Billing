@@ -4,7 +4,7 @@ using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.Api.GrpcServices;
 
-public static class ClusterClientExtensions
+public static class Extensions
 {
     public static ITenantGrain GetTenant(this IGrainFactory clusterClient, ServerCallContext context)
     {
@@ -18,5 +18,10 @@ public static class ClusterClientExtensions
         }
 
         throw new InvalidOperationException("'client_tenant' claim is malformed.");
+    }
+
+    public static long ToTimestamp(this DateTime dateTime)
+    {
+        return new DateTimeOffset(dateTime).ToUnixTimeSeconds();
     }
 }

@@ -6,6 +6,10 @@ using Moq;
 using Utilities.Billing.Data;
 
 namespace Utilities.Billing.Tests.Data;
+
+/// <remarks>
+/// In memory datacontext doesn't support migrations so using sqlite
+/// </remarks>>
 public class MigrationTests
 {
     [Test]
