@@ -1,5 +1,8 @@
+using System.Net;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Utilities.Billing.Api.Interceptors;
 using Utilities.Billing.Api.Services;
@@ -30,6 +33,8 @@ builder.Services.AddGrpc(o =>
     o.Interceptors.Add<LoggingServerInterceptor>();
 }).AddJsonTranscoding();
 
+builder.Services.AddGrpcReflection();
+
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -43,6 +48,34 @@ builder.Services.AddDbContext<BillingDbContext>(o =>
 });
 builder.Services.AddHostedService<BillingDbContextMigrator>();
 
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration.GetValue<string>("Authentication:Authority");
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+
+        options.Backchannel = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler())
+        {
+            DefaultRequestVersion = HttpVersion.Version20,
+            Timeout = options.BackchannelTimeout,
+            MaxResponseContentBufferSize = 1024 * 1024 * 10, // 10 MB 
+        };
+        options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OpenIdConnect handler");
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireScope", policyBuilder =>
+    {
+        policyBuilder.RequireClaim("scope", "billing");
+    });
+});
+
 builder.Services.AddValidatorsFromAssemblyContaining(typeof(Program));
 
 var app = builder.Build();
@@ -52,8 +85,19 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Billing V1");
 });
 // Configure the HTTP request pipeline.
-app.MapGrpcService<BillingService>();
-app.MapGrpcService<AccountsService>();
-app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+app.UseRouting();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGrpcService<BillingService>();
+    endpoints.MapGrpcService<AccountsService>();
+    endpoints.MapGrpcReflectionService();
+    endpoints.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+
+});
 
 app.Run();
