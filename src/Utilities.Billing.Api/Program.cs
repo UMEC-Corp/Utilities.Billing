@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Utilities.Billing.Api.Interceptors;
@@ -29,6 +30,8 @@ builder.Services.AddDbContext<BillingDbContext>(o =>
         .UseSnakeCaseNamingConvention();
 });
 builder.Services.AddHostedService<BillingDbContextMigrator>();
+
+builder.Services.AddValidatorsFromAssemblyContaining(typeof(Program));
 
 var app = builder.Build();
 app.UseSwagger();

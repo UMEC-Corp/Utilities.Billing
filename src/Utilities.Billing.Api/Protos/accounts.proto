@@ -3,6 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
 import "google/api/annotations.proto";
+import "Protos/data.proto";
 
 package billing;
 
@@ -107,11 +108,6 @@ service AccountsService
 
 /* Account Type */
 
-message AccountType {
-  optional uint64 id = 1;
-  string name = 2;
-}
-
 message GetAccountTypeRequest {
   uint64 id = 1;
 }
@@ -151,10 +147,6 @@ message DeleteAccountTypeResponse {
 }
 
 /* Account Holder */
-
-message AccountHolder {
-  optional uint64 id = 1;
-}
 
 message GetAccountHolderRequest {
   uint64 id = 1;
@@ -196,10 +188,6 @@ message DeleteAccountHolderResponse {
 }
 
 /* Account */
-
-message Account {
-  uint64 id = 1;
-}
 
 message GetAccountsRequest {
   uint32 offset = 1;

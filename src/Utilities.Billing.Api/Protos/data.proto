@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option csharp_namespace = "Utilities.Billing.Api.Protos";
+
+import "google/api/annotations.proto";
+
+package billing;
+
+message AccountType {
+  optional uint64 id = 1;
+  optional string name = 2;
+  optional string token = 3;
+}
+
+message AccountHolder {
+  optional uint64 id = 1;
+  optional string wallet = 2;
+}
+
+message Account {
+  optional uint64 id = 1;
+  optional uint64 accountHolderId = 2;
+  optional uint64 accountTypeId = 3;
+  optional string wallet = 4;
+
+  // Transfered only in get one request
+  optional AccountHolder accountHolder = 5;
+  // Transfered only in get one request
+  optional AccountType accountType = 6;
+}
+
+message Invoice {
+  optional uint64 id = 1;
+  optional uint64 accountId = 2;
+  optional double amount = 3;
+  optional uint64 date = 4;
+  optional uint64 amountPaid = 5;
+  optional uint64 dateTo = 6;
+
+  // Transfered only in get one request
+  optional Account account = 7;
+}
+
+message Payment {
+  optional uint64 id = 1;
+  optional uint64 accountId = 2;
+  optional double amount = 3;
+  optional uint64 date = 4;
+  optional string status = 5;
+  optional string transaction = 6;
+
+  // Transfered only in get one request
+  optional Account account = 7;
+}

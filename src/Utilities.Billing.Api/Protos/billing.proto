@@ -3,6 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
 import "google/api/annotations.proto";
+import "Protos/data.proto";
 
 package billing;
 
@@ -75,11 +76,6 @@ service BillingService
 
 /* Invoice */
 
-message Invoice {
-  optional uint64 id = 1;
-  double amount = 4;
-}
-
 message AddInvoiceRequest {
   Invoice invoice = 1;
 }
@@ -120,11 +116,6 @@ message DeleteInvoiceResponse {
 }
 
 /* Payment */
-
-message Payment {
-  optional uint64 id = 1;
-  double amount = 4;
-}
 
 message AddPaymentRequest {
   Payment payment = 1;

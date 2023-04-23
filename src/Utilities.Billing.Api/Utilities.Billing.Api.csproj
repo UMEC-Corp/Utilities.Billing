@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Remove="Protos\accounts.proto" />
     <None Remove="Protos\billing.proto" />
+    <None Remove="Protos\data.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,12 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="Protos\data.proto" />
     <Protobuf Include="Protos\accounts.proto" />
     <Protobuf Include="Protos\billing.proto" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Validation\" />
   </ItemGroup>
 
 </Project>

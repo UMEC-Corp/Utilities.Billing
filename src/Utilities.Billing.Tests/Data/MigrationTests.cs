@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +6,7 @@ using Moq;
 using Utilities.Billing.Data;
 
 namespace Utilities.Billing.Tests.Data;
-public class DataTests
+public class MigrationTests
 {
     [Test]
     public async Task MigrationsShouldSucceedOnEmptyDatabase()
@@ -30,7 +25,7 @@ public class DataTests
     }
 
     [Test]
-    public async Task DbContextMigratorShouldMigrateOnEmptyDb()
+    public async Task DbContextMigratorShouldMigrateEmptyDb()
     {
         var serviceCollection = new ServiceCollection();
 
