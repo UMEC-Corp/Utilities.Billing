@@ -4,100 +4,133 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Interceptors;
-using Utilities.Billing.Api.Services;
 using Utilities.Billing.Data;
 using Winton.Extensions.Configuration.Consul;
-using BillingService = Utilities.Billing.Api.Services.BillingService;
+using BillingService = Utilities.Billing.Api.GrpcServices.BillingService;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Additional configuration is required to successfully run gRPC on macOS.
-// For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
-builder.Configuration
-    .AddConsul($"common/appsettings.{builder.Environment.EnvironmentName}.json", options =>
-    {
-        options.ReloadOnChange = true;
-        options.Optional = true;
-    })
-    .AddConsul($"{builder.Environment.ApplicationName}/appsettings.{builder.Environment.EnvironmentName}.json", options =>
-    {
-        options.ReloadOnChange = true;
-        options.Optional = true;
-    });
-
-// Add services to the container.
-builder.Services.AddGrpc(o =>
+class Program
 {
-    o.Interceptors.Add<ValidatingServerInterceptor>();
-    o.Interceptors.Add<LoggingServerInterceptor>();
-}).AddJsonTranscoding();
-
-builder.Services.AddGrpcReflection();
-
-builder.Services.AddGrpcSwagger();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1",
-        new OpenApiInfo { Title = "Billing V1", Version = "v1" });
-});
-builder.Services.AddDbContext<BillingDbContext>(o =>
-{
-    o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
-        .UseSnakeCaseNamingConvention();
-});
-builder.Services.AddHostedService<BillingDbContextMigrator>();
-
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    static async Task Main(string[] args)
     {
-        options.Authority = builder.Configuration.GetValue<string>("Authentication:Authority");
-        options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters = new TokenValidationParameters
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Host.UseOrleans(siloBuilder =>
         {
-            ValidateAudience = false
-        };
+            siloBuilder.UseLocalhostClustering();
+            siloBuilder.AddMemoryGrainStorage("urls");
+        });
 
-        options.Backchannel = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler())
-        {
-            DefaultRequestVersion = HttpVersion.Version20,
-            Timeout = options.BackchannelTimeout,
-            MaxResponseContentBufferSize = 1024 * 1024 * 10, // 10 MB 
-        };
-        options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OpenIdConnect handler");
-    });
+        ConfigureConfiguration(builder);
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireScope", policyBuilder =>
+        ConfigureGrpc(builder);
+
+        ConfigureDataAccess(builder);
+
+        ConfigureAuthentication(builder);
+
+        var app = builder.Build();
+
+        ConfigureEndpoints(app);
+
+        await app.RunAsync();
+    }
+
+    private static void ConfigureAuthentication(WebApplicationBuilder builder)
     {
-        policyBuilder.RequireClaim("scope", "billing");
-    });
-});
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = builder.Configuration.GetValue<string>("Authentication:Authority");
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false
+                };
 
-builder.Services.AddValidatorsFromAssemblyContaining(typeof(Program));
+                options.Backchannel = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler())
+                {
+                    DefaultRequestVersion = HttpVersion.Version20,
+                    Timeout = options.BackchannelTimeout,
+                    MaxResponseContentBufferSize = 1024 * 1024 * 10, // 10 MB 
+                };
+                options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Microsoft ASP.NET Core OpenIdConnect handler");
+            });
 
-var app = builder.Build();
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Billing V1");
-});
-// Configure the HTTP request pipeline.
-app.UseRouting();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("RequireScope", policyBuilder => { policyBuilder.RequireClaim("scope", "billing"); });
+        });
+    }
 
-app.UseAuthentication();
+    private static void ConfigureDataAccess(WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContext<BillingDbContext>(o =>
+        {
+            o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
+                .UseSnakeCaseNamingConvention();
+        });
+        builder.Services.AddHostedService<BillingDbContextMigrator>();
+    }
 
-app.UseAuthorization();
+    private static void ConfigureGrpc(WebApplicationBuilder builder)
+    {
+        builder.Services.AddGrpc(o =>
+        {
+            o.Interceptors.Add<ValidatingServerInterceptor>();
+            o.Interceptors.Add<LoggingServerInterceptor>();
+        }).AddJsonTranscoding();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapGrpcService<BillingService>();
-    endpoints.MapGrpcService<AccountsService>();
-    endpoints.MapGrpcReflectionService();
-    endpoints.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+        builder.Services.AddGrpcReflection();
 
-});
+        builder.Services.AddGrpcSwagger();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1",
+                new OpenApiInfo { Title = "Billing V1", Version = "v1" });
+        });
 
-app.Run();
+        builder.Services.AddValidatorsFromAssemblyContaining(typeof(Program));
+    }
+
+    private static void ConfigureConfiguration(WebApplicationBuilder builder)
+    {
+        builder.Configuration
+            .AddConsul($"common/appsettings.{builder.Environment.EnvironmentName}.json", options =>
+            {
+                options.ReloadOnChange = true;
+                options.Optional = true;
+            })
+            .AddConsul($"{builder.Environment.ApplicationName}/appsettings.{builder.Environment.EnvironmentName}.json",
+                options =>
+                {
+                    options.ReloadOnChange = true;
+                    options.Optional = true;
+                });
+    }
+
+    private static void ConfigureEndpoints(WebApplication app)
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Billing V1"); });
+        // Configure the HTTP request pipeline.
+        app.UseRouting();
+
+        app.UseAuthentication();
+
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapGrpcService<BillingService>();
+            endpoints.MapGrpcService<AccountsService>();
+            endpoints.MapGrpcReflectionService();
+            endpoints.MapGet("/",
+                () =>
+                    "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+        });
+    }
+
+}
