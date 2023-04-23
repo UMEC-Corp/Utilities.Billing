@@ -2,13 +2,18 @@ using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Interceptors;
+using Utilities.Billing.Api.OpenApi;
 using Utilities.Billing.Data;
 using Winton.Extensions.Configuration.Consul;
 using BillingService = Utilities.Billing.Api.GrpcServices.BillingService;
+
+namespace Utilities.Billing.Api;
 
 class Program
 {
@@ -77,6 +82,8 @@ class Program
 
     private static void ConfigureGrpc(WebApplicationBuilder builder)
     {
+        builder.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, SwaggerOptionsConfigurator>();
+
         builder.Services.AddGrpc(o =>
         {
             o.Interceptors.Add<ValidatingServerInterceptor>();
