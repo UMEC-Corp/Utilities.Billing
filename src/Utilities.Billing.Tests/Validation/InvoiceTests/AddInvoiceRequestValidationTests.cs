@@ -10,33 +10,15 @@ public class AddInvoiceRequestValidationTests
         var validator = new AddInvoiceRequestValidator();
         var request = new AddInvoiceRequest
         {
-            Invoice = new Invoice
-            {
-                AccountId = 1,
-                Amount = 1,
-            }
+            AccountId = 1,
+            Amount = 1,
         };
         var result = validator.Validate(request);
         Assert.IsTrue(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_AddInvoiceRequest_With_Id()
-    {
-        var validator = new AddInvoiceRequestValidator();
-        var request = new AddInvoiceRequest
-        {
-            Invoice = new Invoice
-            {
-                Id = 1,
-            }
-        };
-        var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
-    }
-
-    [Test]
-    public void Validate_Incorrect_AddInvoiceRequest_No_Data()
+    public void Validate_Incorrect_AddInvoiceRequest_Is_Empty()
     {
         var validator = new AddInvoiceRequestValidator();
         var request = new AddInvoiceRequest();

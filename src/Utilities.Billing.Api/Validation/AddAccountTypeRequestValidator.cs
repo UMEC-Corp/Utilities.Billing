@@ -7,11 +7,7 @@ public class AddAccountTypeRequestValidator : AbstractValidator<AddAccountTypeRe
 {
     public AddAccountTypeRequestValidator()
     {
-        RuleFor(x => x.AccountType).NotNull().DependentRules(() =>
-        {
-            RuleFor(x => x.AccountType.HasId).Empty();
-            RuleFor(x => x.AccountType.Name).NotEmpty();
-            RuleFor(x => x.AccountType.Token).NotEmpty();
-        });
+        RuleFor(x => x.Name).NotEmpty();
+        RuleFor(x => x.Token).NotEmpty();
     }
 }

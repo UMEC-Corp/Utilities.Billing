@@ -7,10 +7,6 @@ public class UpdatePaymentRequestValidator : AbstractValidator<UpdatePaymentRequ
 {
     public UpdatePaymentRequestValidator()
     {
-        RuleFor(x => x.Payment).NotNull().DependentRules(() =>
-        {
-            RuleFor(x => x.Payment.Id).NotEmpty();
-            RuleFor(x => x.Payment.Account).Empty();
-        });
+        RuleFor(x => x.Id).NotEmpty();
     }
 }

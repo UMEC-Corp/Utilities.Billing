@@ -11,36 +11,18 @@ public class AddAccountRequestValidationTests
         var validator = new AddAccountRequestValidator();
         var request = new AddAccountRequest
         {
-            Account = new Account
-            {
-                AccountHolderId = 1,
-                AccountTypeId = 1,
-            }
+            AccountHolderId = 1,
+            AccountTypeId = 1,
         };
         var result = validator.Validate(request);
         Assert.True(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_AddAccountRequest_Account_Is_Null()
+    public void Validate_Incorrect_AddAccountRequest_Is_Empty()
     {
         var validator = new AddAccountRequestValidator();
         var request = new AddAccountRequest();
-        var result = validator.Validate(request);
-        Assert.False(result.IsValid);
-    }
-
-    [Test]
-    public void Validate_Incorrect_AddAccountRequest_Id_Is_Specified()
-    {
-        var validator = new AddAccountRequestValidator();
-        var request = new AddAccountRequest
-        {
-            Account = new Account
-            {
-                Id = 1
-            }
-        };
         var result = validator.Validate(request);
         Assert.False(result.IsValid);
     }

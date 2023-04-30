@@ -11,17 +11,14 @@ public class UpdateAccountRequestValidationTests
         var validator = new UpdateAccountRequestValidator();
         var request = new UpdateAccountRequest
         {
-            Account = new Account
-            {
-                Id = 1
-            }
+            Id = 1
         };
         var result = validator.Validate(request);
         Assert.True(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_UpdateAccountRequest_Null()
+    public void Validate_Incorrect_UpdateAccountRequest_Is_Empty()
     {
         var validator = new UpdateAccountRequestValidator();
         var request = new UpdateAccountRequest();
@@ -29,28 +26,14 @@ public class UpdateAccountRequestValidationTests
         Assert.False(result.IsValid);
     }
 
-    [Test]
-    public void Validate_Incorrect_UpdateAccountRequest_No_Id()
-    {
-        var validator = new UpdateAccountRequestValidator();
-        var request = new UpdateAccountRequest
-        {
-            Account = new Account()
-        };
-        var result = validator.Validate(request);
-        Assert.False(result.IsValid);
-    }
 
     [Test]
-    public void Validate_Incorrect_UpdateAccountRequest_Id_Is_Zero()
+    public void Validate_Incorrect_UpdateAccountRequest_Id_Is_Empty()
     {
         var validator = new UpdateAccountRequestValidator();
         var request = new UpdateAccountRequest
         {
-            Account = new Account
-            {
-                Id = 0
-            }
+            Id = 0
         };
         var result = validator.Validate(request);
         Assert.False(result.IsValid);
