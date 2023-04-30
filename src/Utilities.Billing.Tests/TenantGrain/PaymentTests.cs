@@ -9,6 +9,7 @@ public class PaymentTests : GrainsFixtureBase<PaymentsSiloConfigurator>
     private Guid _tenantId;
     private ITenantGrain _tenant;
     private EntityEntry<Account> _account;
+    private EntityEntry<AccountType> _accountType;
 
     [SetUp]
     public async Task SetUp()
@@ -17,7 +18,15 @@ public class PaymentTests : GrainsFixtureBase<PaymentsSiloConfigurator>
 
         _tenant = Cluster.GrainFactory.GetGrain<ITenantGrain>(_tenantId);
 
-        var accountType = await SiloConfigurator.DbContext.AccountTypes.AddAsync(new AccountType
+        await SiloConfigurator.DbContext.Tenants.AddAsync(new Tenant
+        {
+            Id = _tenantId,
+            Currency = Guid.NewGuid().ToString(),
+            Wallet = Guid.NewGuid().ToString(),
+            Name = $"tenant-{_tenantId}"
+        });
+
+        _accountType = await SiloConfigurator.DbContext.AccountTypes.AddAsync(new AccountType
         {
             Token = Guid.NewGuid().ToString(),
             Name = Guid.NewGuid().ToString(),
@@ -34,7 +43,7 @@ public class PaymentTests : GrainsFixtureBase<PaymentsSiloConfigurator>
         _account = await SiloConfigurator.DbContext.Accounts.AddAsync(new Account
         {
             AccountHolder = accountHolder.Entity,
-            AccountType = accountType.Entity,
+            AccountType = _accountType.Entity,
             Wallet = Guid.NewGuid().ToString(),
         });
 
@@ -45,6 +54,13 @@ public class PaymentTests : GrainsFixtureBase<PaymentsSiloConfigurator>
     public async Task Tenant_Should_Create_One_Payment_For_Single_Invoice()
     {
         var amount = 100m;
+
+        SiloConfigurator.DbContext.ExchangeRates.AddAsync(new ExchangeRate
+        {
+            AccountType = _accountType.Entity,
+            Effective = DateTime.UtcNow.AddDays(-1),
+            SellPrice = 0.5m,
+        });
 
         var invoice = await SiloConfigurator.DbContext.Invoices.AddAsync(new Invoice
         {
@@ -66,7 +82,8 @@ public class PaymentTests : GrainsFixtureBase<PaymentsSiloConfigurator>
         var payment = await SiloConfigurator.DbContext.Payments.FindAsync(addPaymentsReply.PaymentIds.Single());
 
         Assert.That(payment, Is.Not.Null);
-        Assert.That(payment.TokenAmount, Is.EqualTo(2 * amount / 3));
+        Assert.That(payment.TokenAmount, Is.EqualTo(2m * amount / 3m));
+        Assert.That(payment.CurrencyAmount, Is.EqualTo(2m * amount / 3m * 0.5m));
         Assert.That(payment.AccountId, Is.EqualTo(_account.Entity.Id));
     }
 }

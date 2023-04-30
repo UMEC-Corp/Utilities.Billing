@@ -90,7 +90,7 @@ public class TenantGrain : Grain, ITenantGrain
             .Distinct());
 
         var absentRates = rates
-            .Where(x => x.Value != ExchangeRate.Empty && x.Value is not { SellPrice: > 0 })
+            .Where(x => x.Value is not { SellPrice: > 0 })
             .Select(x => x.Key)
             .ToList();
 
@@ -146,6 +146,8 @@ public class TenantGrain : Grain, ITenantGrain
                     SellerTokenWallet: account.AccountType.Wallet
                 ));
 
+                reply.PaymentIds.Add(payment.Id);
+
                 await transaction.CommitAsync();
             }
             catch (Exception)
@@ -167,7 +169,7 @@ public class TenantGrain : Grain, ITenantGrain
         }
     }
 
-    private async Task<Dictionary<long, ExchangeRate>> GetRatesAsync(IEnumerable<long> accountTypes)
+    private async Task<Dictionary<long, ExchangeRate?>> GetRatesAsync(IEnumerable<long> accountTypes)
     {
         var rates = await _dbContext.ExchangeRates
             .Where(x => accountTypes.Contains(x.AccountTypeId))
@@ -177,7 +179,7 @@ public class TenantGrain : Grain, ITenantGrain
         var groups = rates
             .GroupBy(x => x.AccountTypeId);
 
-        var result = accountTypes.ToDictionary(x => x, _ => ExchangeRate.Empty);
+        var result = accountTypes.ToDictionary(x => x, _ => (ExchangeRate?)null);
 
         foreach (var group in groups)
         {

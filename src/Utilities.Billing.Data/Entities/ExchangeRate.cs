@@ -12,5 +12,4 @@ public class ExchangeRate : DbEntity<long>
     public DateTime Effective { get; set; }
     public DateTime? Expires { get; set; }
     public decimal SellPrice { get; set; }
-    public static ExchangeRate Empty { get; } = new();
 }

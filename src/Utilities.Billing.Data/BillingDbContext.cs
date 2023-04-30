@@ -23,7 +23,7 @@ public class BillingDbContext : DbContext
 
         modelBuilder.Entity<AccountHolder>(e =>
         {
-            e.HasOne(x=>x.Tenant).WithMany(x=>x.AccountHolders).HasForeignKey(x=>x.TenantId);
+            e.HasOne(x => x.Tenant).WithMany(x => x.AccountHolders).HasForeignKey(x => x.TenantId);
         });
 
         modelBuilder.Entity<Account>(e =>
@@ -33,8 +33,8 @@ public class BillingDbContext : DbContext
 
         modelBuilder.Entity<AccountType>(e =>
         {
-            e.Property(x=>x.Name).IsRequired();
-            e.Property(x=>x.Token).IsRequired();
+            e.Property(x => x.Name).IsRequired();
+            e.Property(x => x.Token).IsRequired();
 
             e.HasOne(x => x.Tenant).WithMany(x => x.AccountTypes).HasForeignKey(x => x.TenantId);
         });
