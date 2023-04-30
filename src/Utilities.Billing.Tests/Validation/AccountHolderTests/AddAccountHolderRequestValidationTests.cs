@@ -10,10 +10,7 @@ public class AddAccountHolderRequestValidationTests
         var validator = new AddAccountHolderRequestValidator();
         var request = new AddAccountHolderRequest
         {
-            AccountHolder = new AccountHolder
-            {
-                Wallet = Guid.NewGuid().ToString(),
-            }
+            Wallet = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
         Assert.IsTrue(result.IsValid);

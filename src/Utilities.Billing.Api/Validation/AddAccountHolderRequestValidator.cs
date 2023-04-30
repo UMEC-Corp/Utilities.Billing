@@ -7,10 +7,6 @@ public class AddAccountHolderRequestValidator : AbstractValidator<AddAccountHold
 {
     public AddAccountHolderRequestValidator()
     {
-        RuleFor(x => x.AccountHolder).NotNull().DependentRules(() =>
-        {
-            RuleFor(x => x.AccountHolder.Id).Empty();
-            RuleFor(x => x.AccountHolder.Wallet).NotEmpty();
-        });
+        RuleFor(x => x.Wallet).NotEmpty();
     }
 }

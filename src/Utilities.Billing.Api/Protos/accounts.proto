@@ -30,7 +30,7 @@ service AccountsService
 
   rpc UpdateAccountType(UpdateAccountTypeRequest) returns (UpdateAccountTypeResponse) {
     option (google.api.http) = {
-      put: "/v1/account-type/{accountType.id}"
+      put: "/v1/account-type/{id}"
       body: "*"
     };
   }
@@ -62,7 +62,7 @@ service AccountsService
 
   rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
     option (google.api.http) = {
-      put: "/v1/account/{account.id}"
+      put: "/v1/account/{id}"
       body: "*"
     };
   }
@@ -88,7 +88,7 @@ service AccountsService
 
   rpc UpdateAccountHolder(UpdateAccountHolderRequest) returns (UpdateAccountHolderResponse) {
     option (google.api.http) = {
-      put: "/v1/account-holder/{accountHolder.id}"
+      put: "/v1/account-holder/{id}"
       body: "*"
     };
   }
@@ -125,15 +125,17 @@ message GetAccountTypesResponse {
 }
 
 message AddAccountTypeRequest {
-  AccountType accountType = 1;
-}
+  string name = 2;
+  string token = 3;}
 
 message AddAccountTypeResponse {
   uint64 id = 1;
 }
 
 message UpdateAccountTypeRequest {
-  AccountType accountType = 1;
+  uint64 id = 1;
+  optional string name = 2;
+  optional string token = 3;
 }
 
 message UpdateAccountTypeResponse {
@@ -166,7 +168,7 @@ message GetAccountHoldersResponse {
 }
 
 message AddAccountHolderRequest {
-  AccountHolder accountHolder = 1;
+  string wallet = 2;
 }
 
 message AddAccountHolderResponse {
@@ -174,7 +176,8 @@ message AddAccountHolderResponse {
 }
 
 message UpdateAccountHolderRequest {
-  AccountHolder accountHolder = 1;
+  uint64 id = 1;
+  string wallet = 2;
 }
 
 message UpdateAccountHolderResponse {
@@ -203,11 +206,12 @@ message GetAccountRequest {
 }
 
 message GetAccountResponse {
-  Account account = 1;
+  ExtendedAccount account = 1;
 }
 
 message AddAccountRequest {
-  Account account = 1;
+  uint64 accountHolderId = 2;
+  uint64 accountTypeId = 3;
 }
 
 message AddAccountResponse {
@@ -215,7 +219,9 @@ message AddAccountResponse {
 }
 
 message UpdateAccountRequest {
-  Account account = 1;
+  uint64 id = 1;
+  optional uint64 accountHolderId = 2;
+  optional uint64 accountTypeId = 3;
 }
 
 message UpdateAccountResponse { 

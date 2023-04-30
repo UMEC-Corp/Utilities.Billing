@@ -30,7 +30,7 @@ service BillingService
 
   rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
     option (google.api.http) = {
-      put: "/v1/invoice/{invoice.id}"
+      put: "/v1/invoice/{id}"
       body: "*"
     };
   }
@@ -62,7 +62,7 @@ service BillingService
 
   rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse) {
     option (google.api.http) = {
-      put: "/v1/payment/{payment.id}"
+      put: "/v1/payment/{id}"
       body: "*"
     };
   }
@@ -77,32 +77,22 @@ service BillingService
 /* Invoice */
 
 message AddInvoiceRequest {
-  Invoice invoice = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  optional uint64 date = 4;
+  optional uint64 dateTo = 6;
 }
 
 message AddInvoiceResponse {
   uint64 id = 1;
 }
 
-message GetInvoiceRequest {
-  uint64 id = 1;
-}
-
-message GetInvoiceResponse {
-  Invoice invoice = 1;
-}
-
-message GetInvoicesRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
-}
-
-message GetInvoicesResponse {
-  repeated Invoice invoices = 1;
-}
-
 message UpdateInvoiceRequest {
-  Invoice invoice = 1;
+  uint64 id = 1;
+  optional uint64 accountId = 2;
+  optional double amount = 3;
+  optional uint64 date = 4;
+  optional uint64 dateTo = 6;
 }
 
 message UpdateInvoiceResponse {
@@ -115,35 +105,42 @@ message DeleteInvoiceRequest{
 message DeleteInvoiceResponse {
 }
 
+message GetInvoiceRequest {
+  uint64 id = 1;
+}
+
+message GetInvoiceResponse {
+  ExtendedInvoice invoice = 1;
+}
+
+message GetInvoicesRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetInvoicesResponse {
+  repeated Invoice invoices = 1;
+}
+
+
 /* Payment */
 
 message AddPaymentRequest {
-  Payment payment = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  optional uint64 date = 4;
 }
 
 message AddPaymentResponse {
   uint64 id = 1;
 }
 
-message GetPaymentRequest {
-  uint64 id = 1;
-}
-
-message GetPaymentResponse {
-  Payment payment = 1;
-}
-
-message GetPaymentsRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
-}
-
-message GetPaymentsResponse {
-  repeated Payment items = 1;
-}
 
 message UpdatePaymentRequest {
-  Payment payment = 1;
+  int64 id = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  optional uint64 date = 4;
 }
 
 message UpdatePaymentResponse {
@@ -154,4 +151,21 @@ message DeletePaymentRequest {
 }
 
 message DeletePaymentResponse {
+}
+
+message GetPaymentRequest {
+  uint64 id = 1;
+}
+
+message GetPaymentResponse {
+  ExtendedPayment payment = 1;
+}
+
+message GetPaymentsRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+}
+
+message GetPaymentsResponse {
+  repeated Payment items = 1;
 }

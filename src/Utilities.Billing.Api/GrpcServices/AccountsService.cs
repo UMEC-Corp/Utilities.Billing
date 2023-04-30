@@ -67,8 +67,8 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
 
         var id = await tenant.AddAccountTypeAsync(new AddAccountTypeCommand
         {
-            Name = request.AccountType.Name,
-            Token = request.AccountType.Token
+            Name = request.Name,
+            Token = request.Token
         });
 
         return new AddAccountTypeResponse
@@ -83,14 +83,14 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
 
         var command = new UpdateAccountTypeCommand();
 
-        if (request.AccountType.HasName)
+        if (request.HasName)
         {
-            command.Name = request.AccountType.Name;
+            command.Name = request.Name;
         }
 
-        if (request.AccountType.HasToken)
+        if (request.HasToken)
         {
-            command.Token = request.AccountType.Token;
+            command.Token = request.Token;
         }
 
         await tenant.UpdateAccountTypeAsync(command);

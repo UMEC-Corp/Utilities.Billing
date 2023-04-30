@@ -7,53 +7,81 @@ import "google/api/annotations.proto";
 package billing;
 
 message AccountType {
-  optional uint64 id = 1;
-  optional string name = 2;
-  optional string token = 3;
-  optional uint64 created = 4;
+  uint64 id = 1;
+  string name = 2;
+  string token = 3;
+  uint64 created = 4;
 }
 
 message AccountHolder {
-  optional uint64 id = 1;
-  optional string wallet = 2;
-  optional uint64 created = 3;
+  uint64 id = 1;
+  string wallet = 2;
+  uint64 created = 3;
 }
 
 message Account {
-  optional uint64 id = 1;
-  optional uint64 accountHolderId = 2;
-  optional uint64 accountTypeId = 3;
-  optional string wallet = 4;
-  optional uint64 created = 5;
+  uint64 id = 1;
+  uint64 accountHolderId = 2;
+  uint64 accountTypeId = 3;
+  string wallet = 4;
+  uint64 created = 5;
+}
+
+message ExtendedAccount {
+  uint64 id = 1;
+  uint64 accountHolderId = 2;
+  uint64 accountTypeId = 3;
+  string wallet = 4;
+  uint64 created = 5;
 
   // Transfered only in get one request
-  optional AccountHolder accountHolder = 6;
+  AccountHolder accountHolder = 6;
   // Transfered only in get one request
-  optional AccountType accountType = 7;
+  AccountType accountType = 7;
 }
 
 message Invoice {
-  optional uint64 id = 1;
-  optional uint64 accountId = 2;
-  optional double amount = 3;
-  optional uint64 date = 4;
+  uint64 id = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  uint64 date = 4;
   optional uint64 amountPaid = 5;
   optional uint64 dateTo = 6;
-  optional uint64 created = 7;
+  uint64 created = 7;
+}
 
+message ExtendedInvoice {
+  uint64 id = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  uint64 date = 4;
+  optional uint64 amountPaid = 5;
+  optional uint64 dateTo = 6;
+  uint64 created = 7;
+  
   // Transfered only in get one request
-  optional Account account = 8;
+  ExtendedAccount account = 8;
 }
 
 message Payment {
-  optional uint64 id = 1;
-  optional uint64 accountId = 2;
-  optional double amount = 3;
-  optional uint64 date = 4;
-  optional string status = 5;
-  optional string transaction = 6;
-  optional uint64 created = 7;
+  uint64 id = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  uint64 date = 4;
+  string status = 5;
+  string transaction = 6;
+  uint64 created = 7;
+}
 
+message ExtendedPayment {
+  uint64 id = 1;
+  uint64 accountId = 2;
+  double amount = 3;
+  uint64 date = 4;
+  string status = 5;
+  optional string transaction = 6;
+  uint64 created = 7;
+  
   // Transfered only in get one request
-  optional Account account = 8;
+  ExtendedAccount account = 8;
 }

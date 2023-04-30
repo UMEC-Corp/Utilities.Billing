@@ -7,9 +7,6 @@ public class UpdateAccountTypeRequestValidator : AbstractValidator<UpdateAccount
 {
     public UpdateAccountTypeRequestValidator()
     {
-        RuleFor(x => x.AccountType).NotNull().DependentRules(() =>
-        {
-            RuleFor(x => x.AccountType.Id).NotEmpty();
-        });
+        RuleFor(x => x.Id).NotEmpty();
     }
 }

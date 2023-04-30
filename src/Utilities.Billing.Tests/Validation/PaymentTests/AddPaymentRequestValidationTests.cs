@@ -10,33 +10,15 @@ public class AddPaymentRequestValidationTests
         var validator = new AddPaymentRequestValidator();
         var request = new AddPaymentRequest
         {
-            Payment = new Payment
-            {
-                AccountId = 1,
-                Amount = 1,
-            }
+            AccountId = 1,
+            Amount = 1.0,
         };
         var result = validator.Validate(request);
         Assert.IsTrue(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_AddPaymentRequest_With_Id()
-    {
-        var validator = new AddPaymentRequestValidator();
-        var request = new AddPaymentRequest
-        {
-            Payment = new Payment
-            {
-                Id = 1,
-            }
-        };
-        var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
-    }
-
-    [Test]
-    public void Validate_Incorrect_AddPaymentRequest_No_Data()
+    public void Validate_Incorrect_AddPaymentRequest_Is_Empty()
     {
         var validator = new AddPaymentRequestValidator();
         var request = new AddPaymentRequest();

@@ -10,10 +10,7 @@ public class UpdateAccountHolderRequestValidationTests
         var validator = new UpdateAccountHolderRequestValidator();
         var request = new UpdateAccountHolderRequest
         {
-            AccountHolder = new AccountHolder
-            {
-                Id = 1,
-            }
+            Id = 1,
         };
 
         var result = validator.Validate(request);
@@ -26,10 +23,7 @@ public class UpdateAccountHolderRequestValidationTests
         var validator = new UpdateAccountHolderRequestValidator();
         var request = new UpdateAccountHolderRequest
         {
-            AccountHolder = new AccountHolder
-            {
-                Id = 0,
-            }
+            Id = 0,
         };
         var result = validator.Validate(request);
         Assert.False(result.IsValid);
@@ -41,9 +35,7 @@ public class UpdateAccountHolderRequestValidationTests
         var validator = new UpdateAccountHolderRequestValidator();
         var request = new UpdateAccountHolderRequest
         {
-            AccountHolder = new AccountHolder
-            {
-            }
+            Id = 0,
         };
         var result = validator.Validate(request);
         Assert.False(result.IsValid);

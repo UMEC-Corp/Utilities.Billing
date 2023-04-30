@@ -7,10 +7,13 @@ public class UpdateInvoiceRequestValidator : AbstractValidator<UpdateInvoiceRequ
 {
     public UpdateInvoiceRequestValidator()
     {
-        RuleFor(x => x.Invoice).NotNull().DependentRules(() =>
-        {
-            RuleFor(x => x.Invoice.Id).NotEmpty();
-            RuleFor(x => x.Invoice.Account).Empty();
-        });
+        var now = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Amount).GreaterThan(.0).When(x => x.HasAmount);
+        RuleFor(x => x.AccountId).NotEmpty().When(x => x.HasAccountId);
+        RuleFor(x => x.Date).GreaterThanOrEqualTo(now).When(request => request.HasDate);
+        RuleFor(x => x.DateTo).GreaterThanOrEqualTo(now).When(request => request.HasDateTo);
+        RuleFor(x => x.DateTo).GreaterThan(x => x.Date).When(request => request.HasDateTo);
     }
 }

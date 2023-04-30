@@ -10,63 +10,39 @@ public class AddAccountTypeRequestValidationTests
         var validator = new AddAccountTypeRequestValidator();
         var request = new AddAccountTypeRequest
         {
-            AccountType = new AccountType
-            {
-                Name = Guid.NewGuid().ToString(),
-                Token = Guid.NewGuid().ToString(),
-            }
+            Name = Guid.NewGuid().ToString(),
+            Token = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
         Assert.IsTrue(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_AddAccountTypeRequest_With_Id()
+    public void Validate_Incorrect_AddAccountTypeRequest_Name_Is_Empty()
     {
         var validator = new AddAccountTypeRequestValidator();
         var request = new AddAccountTypeRequest
         {
-            AccountType = new AccountType
-            {
-                Id = 1,
-            }
+            Token = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
         Assert.IsFalse(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_AddAccountTypeRequest_Without_Name()
+    public void Validate_Incorrect_AddAccountTypeRequest_Token_Is_Empty()
     {
         var validator = new AddAccountTypeRequestValidator();
         var request = new AddAccountTypeRequest
         {
-            AccountType = new AccountType
-            {
-                Token = Guid.NewGuid().ToString(),
-            }
+            Name = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
         Assert.IsFalse(result.IsValid);
     }
 
     [Test]
-    public void Validate_Incorrect_AddAccountTypeRequest_Without_Token()
-    {
-        var validator = new AddAccountTypeRequestValidator();
-        var request = new AddAccountTypeRequest
-        {
-            AccountType = new AccountType
-            {
-                Name = Guid.NewGuid().ToString(),
-            }
-        };
-        var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
-    }
-
-    [Test]
-    public void Validate_Incorrect_AddAccountTypeRequest_No_Data()
+    public void Validate_Incorrect_AddAccountTypeRequest_Is_Empty()
     {
         var validator = new AddAccountTypeRequestValidator();
         var request = new AddAccountTypeRequest();
