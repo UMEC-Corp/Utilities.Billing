@@ -30,7 +30,7 @@ service AccountsService
 
   rpc UpdateAccountType(UpdateAccountTypeRequest) returns (UpdateAccountTypeResponse) {
     option (google.api.http) = {
-      put: "/v1/account-type/{accountType.id}"
+      put: "/v1/account-type/{id}"
       body: "*"
     };
   }
@@ -62,7 +62,7 @@ service AccountsService
 
   rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
     option (google.api.http) = {
-      put: "/v1/account/{account.id}"
+      put: "/v1/account/{id}"
       body: "*"
     };
   }
@@ -88,7 +88,7 @@ service AccountsService
 
   rpc UpdateAccountHolder(UpdateAccountHolderRequest) returns (UpdateAccountHolderResponse) {
     option (google.api.http) = {
-      put: "/v1/account-holder/{accountHolder.id}"
+      put: "/v1/account-holder/{id}"
       body: "*"
     };
   }

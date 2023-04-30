@@ -30,7 +30,7 @@ service BillingService
 
   rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
     option (google.api.http) = {
-      put: "/v1/invoice/{invoice.id}"
+      put: "/v1/invoice/{id}"
       body: "*"
     };
   }
@@ -62,7 +62,7 @@ service BillingService
 
   rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse) {
     option (google.api.http) = {
-      put: "/v1/payment/{payment.id}"
+      put: "/v1/payment/{id}"
       body: "*"
     };
   }
