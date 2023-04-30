@@ -72,6 +72,13 @@ service BillingService
       delete: "/v1/payment/{id}"
     };
   }
+
+  rpc AddPaymentsForInvoices(AddPaymentsForInvoicesRequest) returns (AddPaymentsForInvoicesResponse) {
+    option (google.api.http) = {
+      post: "/v1/invoice/payments"
+      body: "*"
+    };
+  }
 }
 
 /* Invoice */
@@ -164,8 +171,17 @@ message GetPaymentResponse {
 message GetPaymentsRequest {
   uint32 offset = 1;
   uint32 limit = 2;
+  repeated uint64 ids = 3;
 }
 
 message GetPaymentsResponse {
   repeated Payment items = 1;
+}
+
+message AddPaymentsForInvoicesRequest {
+  repeated uint64 invoiceIds = 1;
+}
+
+message AddPaymentsForInvoicesResponse {
+  repeated uint64 paymentIds = 1;
 }

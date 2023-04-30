@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
 using Utilities.Billing.Contracts;
-using Utilities.Billing.Data;
+using Utilities.Billing.Data.Entities;
 
-namespace Utilities.Billing.Tests.Grains;
-public class TenantTests : GrainsFixtureBase
+namespace Utilities.Billing.Tests.TenantGrain;
+public class AccountTypeTests : GrainsFixtureBase<SiloConfigurator>
 {
     [Test]
     public async Task Tenant_Should_Create_AccountType()
@@ -34,5 +28,6 @@ public class TenantTests : GrainsFixtureBase
         Assert.That(accountType.Token, Is.EqualTo(command.Token));
         Assert.That(accountType.TenantId, Is.EqualTo(tenantId));
         Assert.That(accountType.Created, Is.GreaterThanOrEqualTo(now));
+        Assert.That(accountType.Wallet, Is.Not.Empty);
     }
 }

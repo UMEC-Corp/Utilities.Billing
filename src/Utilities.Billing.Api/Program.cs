@@ -11,6 +11,7 @@ using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Interceptors;
 using Utilities.Billing.Api.OpenApi;
 using Utilities.Billing.Data;
+using Utilities.Billing.StellarWallets;
 using Winton.Extensions.Configuration.Consul;
 using BillingService = Utilities.Billing.Api.GrpcServices.BillingService;
 
@@ -27,6 +28,8 @@ class Program
             siloBuilder.UseLocalhostClustering();
             siloBuilder.AddMemoryGrainStorage("urls");
         });
+
+        builder.Services.UseStellarWallets();
 
         ConfigureConfiguration(builder);
 

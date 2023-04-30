@@ -14,57 +14,47 @@ public class BillingDbContext : DbContext
     public DbSet<AccountType> AccountTypes { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
-
+    public DbSet<ExchangeRate> ExchangeRates { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Tenant>(e =>
         {
-            e.HasKey(o => o.Id);
         });
 
         modelBuilder.Entity<AccountHolder>(e =>
         {
-            e.HasKey(o => o.Id);
-            e.Property(o => o.Id).UseIdentityColumn();
-
             e.HasOne(x=>x.Tenant).WithMany(x=>x.AccountHolders).HasForeignKey(x=>x.TenantId);
         });
 
         modelBuilder.Entity<Account>(e =>
         {
-            e.HasKey(o => o.Id);
-            e.Property(o => o.Id).UseIdentityColumn();
+            e.HasOne(x => x.AccountType).WithMany(x => x.Accounts).HasForeignKey(x => x.AccountTypeId);
         });
 
         modelBuilder.Entity<AccountType>(e =>
         {
-            e.HasKey(o => o.Id);
-            e.Property(o => o.Id).UseIdentityColumn();
-
             e.Property(x=>x.Name).IsRequired();
             e.Property(x=>x.Token).IsRequired();
 
             e.HasOne(x => x.Tenant).WithMany(x => x.AccountTypes).HasForeignKey(x => x.TenantId);
         });
 
+        modelBuilder.Entity<ExchangeRate>(e =>
+        {
+            e.HasOne(x => x.AccountType).WithMany(x => x.ExchangeRates).HasForeignKey(x => x.AccountTypeId);
+        });
+
         modelBuilder.Entity<Payment>(e =>
         {
-            e.HasKey(o => o.Id);
-            e.Property(o => o.Id).UseIdentityColumn();
-
             e.HasOne(x => x.Account).WithMany(x => x.Payments).HasForeignKey(x => x.AccountId);
         });
 
         modelBuilder.Entity<Invoice>(e =>
         {
-            e.HasKey(o => o.Id);
-            e.Property(o => o.Id).UseIdentityColumn();
-
             e.HasOne(x => x.Account).WithMany(x => x.Invoices).HasForeignKey(x => x.AccountId);
         });
 
         modelBuilder.AddSoftDeleteFilters();
-
 
         base.OnModelCreating(modelBuilder);
     }

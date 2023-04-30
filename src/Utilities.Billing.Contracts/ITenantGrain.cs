@@ -6,6 +6,49 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task UpdateAccountTypeAsync(UpdateAccountTypeCommand command);
     Task<Page<AccountTypeItem>> GetAccountTypesAsync(GetAccountTypesQuery query);
     Task<AccountTypeItem> GetAccountTypeAsync(GetAccountTypeQuery query);
+    Task<AddPaymentsReply> AddPaymentsForInvoicesAsync(AddPaymentsForInvoicesCommand command);
+    Task<AddInvoicesReply> AddInvoicesAsync(AddInvoicesCommand addInvoicesCommand);
+}
+
+[GenerateSerializer]
+public class AddInvoicesReply
+{
+    [Id(0)]
+    public List<long> InvoiceIds { get; } = new();
+}
+
+[GenerateSerializer]
+public class AddInvoicesCommand
+{
+    [Id(0)]
+    public List<Item> Items { get; } = new();
+
+    [GenerateSerializer]
+    public class Item
+    {
+        [Id(0)]
+        public long AccountId { get; set; }
+        [Id(1)]
+        public decimal Amount { get; set; }
+        [Id(2)]
+        public DateTime? Date { get; set; }
+        [Id(3)]
+        public DateTime? DateTo { get; set; }
+    }
+}
+
+[GenerateSerializer]
+public class AddPaymentsReply
+{
+    [Id(0)]
+    public List<long> PaymentIds { get; } = new();
+}
+
+[GenerateSerializer]
+public class AddPaymentsForInvoicesCommand
+{
+    [Id(0)]
+    public List<long> InvoiceIds { get; } = new();
 }
 
 [GenerateSerializer]

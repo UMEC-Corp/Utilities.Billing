@@ -7,4 +7,5 @@ public class Invoice : DbEntity<long>
     public decimal AmountTotal { get; set; }
     public decimal AmountPayed { get; set; }
     public DateTime? Date { get; set; }
+    public DateTime? DateTo { get; set; }
 }

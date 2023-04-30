@@ -6,4 +6,5 @@ public class Tenant : DbEntity<Guid>
     public string Currency { get; set; }
     public virtual ICollection<AccountHolder> AccountHolders { get; set; } = new HashSet<AccountHolder>();
     public virtual ICollection<AccountType> AccountTypes { get; set; } = new HashSet<AccountType>();
+    public string Wallet { get; set; }
 }
