@@ -20,7 +20,6 @@
     <PackageReference Include="Grpc.AspNetCore" Version="2.49.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.49.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.5">
       <PrivateAssets>all</PrivateAssets>
@@ -29,7 +28,14 @@
     <PackageReference Include="Microsoft.Orleans.Client" Version="7.1.2" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.YandexCloud" Version="1.0.10" />
     <PackageReference Include="Winton.Extensions.Configuration.Consul" Version="3.3.0" />
+    <PackageReference Include="Yandex.Cloud.Protos" Version="1.2.0">
+	    <Aliases>yandex_protos</Aliases>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

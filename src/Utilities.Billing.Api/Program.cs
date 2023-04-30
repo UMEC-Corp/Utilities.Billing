@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Interceptors;
@@ -29,6 +30,8 @@ class Program
 
         ConfigureConfiguration(builder);
 
+        ConfigureLogging(builder);
+
         ConfigureGrpc(builder);
 
         ConfigureDataAccess(builder);
@@ -40,6 +43,14 @@ class Program
         ConfigureEndpoints(app);
 
         await app.RunAsync();
+    }
+
+    private static void ConfigureLogging(WebApplicationBuilder builder)
+    {
+        builder.Host.UseSerilog((context, config) =>
+        {
+            config.ReadFrom.Configuration(context.Configuration);
+        });
     }
 
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
