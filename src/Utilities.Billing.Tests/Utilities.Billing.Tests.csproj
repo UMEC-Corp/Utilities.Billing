@@ -28,9 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Utilities.Billing.Api\Utilities.Billing.Api.csproj" />
-    <ProjectReference Include="..\Utilities.Billing.Contracts\Utilities.Billing.Contracts.csproj" />
-    <ProjectReference Include="..\Utilities.Billing.Data\Utilities.Billing.Data.csproj" />
-    <ProjectReference Include="..\Utilities.Billing.Grains\Utilities.Billing.Grains.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,12 +8,12 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
-using Utilities.Billing.Api.Interceptors;
 using Utilities.Billing.Api.OpenApi;
 using Utilities.Billing.Data;
 using Utilities.Billing.StellarWallets;
-using Winton.Extensions.Configuration.Consul;
-using BillingService = Utilities.Billing.Api.GrpcServices.BillingService;
+using Utilities.Common.Consul;
+using Utilities.Common.Data;
+using Utilities.Common.Grpc.Interceptors;
 
 namespace Utilities.Billing.Api;
 
@@ -36,6 +36,8 @@ class Program
         ConfigureLogging(builder);
 
         ConfigureGrpc(builder);
+
+        builder.Services.AddValidatorsFromAssemblyContaining(typeof(Program));
 
         ConfigureDataAccess(builder);
 
@@ -80,7 +82,7 @@ class Program
 
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("RequireScope", policyBuilder => { policyBuilder.RequireClaim("scope", "billing"); });
+            options.AddPolicy("RequireBillingScope", policyBuilder => { policyBuilder.RequireClaim("scope", "billing"); });
         });
     }
 
@@ -91,7 +93,7 @@ class Program
             o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
                 .UseSnakeCaseNamingConvention();
         });
-        builder.Services.AddHostedService<BillingDbContextMigrator>();
+        builder.Services.AddHostedService<DbContextMigrator<BillingDbContext>>();
     }
 
     private static void ConfigureGrpc(WebApplicationBuilder builder)
@@ -112,24 +114,11 @@ class Program
             c.SwaggerDoc("v1",
                 new OpenApiInfo { Title = "Billing V1", Version = "v1" });
         });
-
-        builder.Services.AddValidatorsFromAssemblyContaining(typeof(Program));
     }
 
     private static void ConfigureConfiguration(WebApplicationBuilder builder)
     {
-        builder.Configuration
-            .AddConsul($"common/appsettings.{builder.Environment.EnvironmentName}.json", options =>
-            {
-                options.ReloadOnChange = true;
-                options.Optional = true;
-            })
-            .AddConsul($"{builder.Environment.ApplicationName}/appsettings.{builder.Environment.EnvironmentName}.json",
-                options =>
-                {
-                    options.ReloadOnChange = true;
-                    options.Optional = true;
-                });
+        builder.Configuration.AddConsulConfiguration(builder.Environment.ApplicationName, builder.Environment.EnvironmentName);
     }
 
     private static void ConfigureEndpoints(WebApplication app)

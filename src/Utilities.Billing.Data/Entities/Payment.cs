@@ -1,4 +1,6 @@
-﻿namespace Utilities.Billing.Data.Entities;
+﻿using Utilities.Common.Data;
+
+namespace Utilities.Billing.Data.Entities;
 
 public class Payment : DbEntity<long>
 {

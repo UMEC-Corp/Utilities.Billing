@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Utilities.Billing.Data.Entities;
+using Utilities.Common.Data;
 
 namespace Utilities.Billing.Data;
 

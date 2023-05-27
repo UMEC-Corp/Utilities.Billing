@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="stellar-dotnet-sdk" Version="9.0.37" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Utilities.Billing.Contracts\Utilities.Billing.Contracts.csproj" />
   </ItemGroup>
 

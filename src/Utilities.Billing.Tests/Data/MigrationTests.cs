@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Utilities.Billing.Data;
+using Utilities.Common.Data;
 
 namespace Utilities.Billing.Tests.Data;
 
@@ -42,8 +43,8 @@ public class MigrationTests
         var dbContext = new BillingDbContext(serviceCollection.BuildServiceProvider()
             .GetRequiredService<DbContextOptions<BillingDbContext>>());
 
-        var migrator = new BillingDbContextMigrator(serviceCollection.BuildServiceProvider(), Mock.Of<IHost>(),
-            Mock.Of<ILogger<BillingDbContextMigrator>>());
+        var migrator = new DbContextMigrator<DbContext>(serviceCollection.BuildServiceProvider(), Mock.Of<IHost>(),
+            Mock.Of<ILogger<DbContextMigrator<DbContext>>>());
 
         await dbContext.Database.OpenConnectionAsync();
 

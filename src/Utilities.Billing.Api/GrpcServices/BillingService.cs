@@ -6,7 +6,7 @@ using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.Api.GrpcServices;
 
-[Authorize(Policy = "RequireScope")]
+[Authorize(Policy = "RequireBillingScope")]
 public class BillingService : Protos.BillingService.BillingServiceBase
 {
     private readonly IGrainFactory _clusterClient;
