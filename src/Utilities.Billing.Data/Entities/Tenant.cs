@@ -1,6 +1,8 @@
-﻿namespace Utilities.Billing.Data.Entities;
+﻿using Utilities.Common.Data;
 
-public class Tenant : DbEntity<Guid>
+namespace Utilities.Billing.Data.Entities;
+
+public class Tenant : DbEntityWithGuidKey
 {
     public string Name { get; set; }
     public string Currency { get; set; }

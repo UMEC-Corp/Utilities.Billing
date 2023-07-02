@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Utilities.Common.Data;
 
 namespace Utilities.Billing.Data;
 public static class Extensions

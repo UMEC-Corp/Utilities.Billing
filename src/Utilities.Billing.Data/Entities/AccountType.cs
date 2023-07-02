@@ -1,6 +1,8 @@
-﻿namespace Utilities.Billing.Data.Entities;
+﻿using Utilities.Common.Data;
 
-public class AccountType : DbEntity<long>
+namespace Utilities.Billing.Data.Entities;
+
+public class AccountType : DbEntityWithLongKey
 {
     public string Name { get; set; }
     public string Token { get; set; }

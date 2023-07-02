@@ -1,6 +1,8 @@
-﻿namespace Utilities.Billing.Data.Entities;
+﻿using Utilities.Common.Data;
 
-public class AccountHolder : DbEntity<long>
+namespace Utilities.Billing.Data.Entities;
+
+public class AccountHolder : DbEntityWithLongKey
 {
     public string Wallet { get; set; }
     public Guid TenantId { get; set; }

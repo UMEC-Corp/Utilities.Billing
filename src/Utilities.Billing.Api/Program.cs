@@ -11,6 +11,7 @@ using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Interceptors;
 using Utilities.Billing.Api.OpenApi;
 using Utilities.Billing.Data;
+using Utilities.Common.Data;
 using Winton.Extensions.Configuration.Consul;
 using BillingService = Utilities.Billing.Api.GrpcServices.BillingService;
 
@@ -25,7 +26,7 @@ class Program
         builder.Host.UseOrleans(siloBuilder =>
         {
             siloBuilder.UseLocalhostClustering();
-            siloBuilder.AddMemoryGrainStorage("urls");
+            siloBuilder.AddMemoryGrainStorageAsDefault();
         });
 
         ConfigureConfiguration(builder);
@@ -88,7 +89,7 @@ class Program
             o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
                 .UseSnakeCaseNamingConvention();
         });
-        builder.Services.AddHostedService<BillingDbContextMigrator>();
+        builder.Services.AddHostedService<DbContextMigrator<BillingDbContext>>();
     }
 
     private static void ConfigureGrpc(WebApplicationBuilder builder)
@@ -140,15 +141,12 @@ class Program
 
         app.UseAuthorization();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGrpcService<BillingService>();
-            endpoints.MapGrpcService<AccountsService>();
-            endpoints.MapGrpcReflectionService();
-            endpoints.MapGet("/",
-                () =>
-                    "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-        });
+        app.MapGrpcService<BillingService>();
+        app.MapGrpcService<AccountsService>();
+        app.MapGrpcReflectionService();
+        app.MapGet("/",
+            () =>
+                "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
     }
 
 }

@@ -1,6 +1,8 @@
-﻿namespace Utilities.Billing.Data.Entities;
+﻿using Utilities.Common.Data;
 
-public class Payment : DbEntity<long>
+namespace Utilities.Billing.Data.Entities;
+
+public class Payment : DbEntityWithLongKey
 {
     public long AccountId { get; set; }
     public virtual Account Account { get; set; }
