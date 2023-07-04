@@ -7,10 +7,19 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["src/Utilities.Billing.Api/Utilities.Billing.Api.csproj", "src/Utilities.Billing.Api/"]
-RUN dotnet restore "src/Utilities.Billing.Api/Utilities.Billing.Api.csproj"
+
+ARG nuget_url
+ARG nuget_user
+ARG nuget_password
+
+COPY ["Utilities.Billing.Api/Utilities.Billing.Api.csproj", "Utilities.Billing.Api/"]
+
+RUN dotnet nuget add source $nuget_url -n internalfeed -u $nuget_user -p $nuget_password --store-password-in-clear-text
+
+RUN dotnet restore "Utilities.Billing.Api/Utilities.Billing.Api.csproj"
 COPY . .
-WORKDIR "/src/src/Utilities.Billing.Api"
+WORKDIR "/src/Utilities.Billing.Api"
+
 RUN dotnet build "Utilities.Billing.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
