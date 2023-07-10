@@ -9,7 +9,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageReference Include="EFCore.NamingConventions" Version="7.0.2" />
-    <PackageReference Include="Utilities.Common.Data" Version="1.0.14-develop" />
+    <PackageReference Include="Utilities.Common.Data" Version="1.0.15-develop" />
 
   </ItemGroup>
 	<ItemGroup>
