@@ -34,8 +34,8 @@
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.YandexCloud" Version="1.0.10" />
-    <PackageReference Include="Utilities.Common.Consul" Version="1.0.17-develop" />
-    <PackageReference Include="Utilities.Common.Grpc" Version="1.0.17-develop" />
+    <PackageReference Include="Utilities.Common.Consul" Version="1.0.18-develop" />
+    <PackageReference Include="Utilities.Common.Grpc" Version="1.0.18-develop" />
     <PackageReference Include="Winton.Extensions.Configuration.Consul" Version="3.3.0" />
     <PackageReference Include="Yandex.Cloud.Protos" Version="1.2.0">
 	    <Aliases>yandex_protos</Aliases>
