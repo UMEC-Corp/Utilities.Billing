@@ -1,0 +1,67 @@
+trigger:
+- develop
+
+resources:
+- repo: self
+
+variables:
+  major: '1'
+  minor: '0'
+  revision: $[counter(variables['minor'], 1)] # This will get reset every time minor gets bumped.
+
+
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    tag: $['$(major).$(minor).$(revision).$(Build.BuildId)']
+  ${{ else }}:
+    tag: $['$(major).$(minor).$(revision).$(Build.BuildId)-$(Build.SourceBranchName)']
+
+  nugetUrl: https://pkgs.dev.azure.com/deviotcloud/UMEC/_packaging/umec-artifacts/nuget/v2
+  dockerRegistry: registry.deviot.cloud
+
+  imageName: utilities-billing
+  buildContext: src
+  dockerfile: Utilities.Billing.Api/Dockerfile # this should be relative to the build context
+  k8sns: umec-dev
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool: "Self-Hosted On K8s"
+    steps:
+    - task: CmdLine@2
+      inputs:
+        script: |
+          echo "Building docker://$(dockerRegistry)/$(imageName):$(tag)..."
+    - task: CmdLine@2
+      displayName: Build Container Image
+      inputs:
+        script: |
+          buildah bud \
+            --build-arg nuget_password=$(System.AccessToken) \
+            --build-arg nuget_user=user \
+            --build-arg nuget_url=$(nugetUrl) \
+            --isolation chroot \
+            -t $(imageName):temp-$(Build.SourceBranchName) \
+            -f $(dockerfile) \
+            $(buildContext)
+    - task: CmdLine@2
+      displayName: Push Container Image Registry
+      env:
+        REG_USER: $(registry-user)
+        REG_PASSWD: $(registry-password)
+      inputs:
+        script: |
+          echo "buildah push --creds $REG_USER:*** --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):$(tag)"
+          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):$(tag)
+          echo "buildah push --creds $REG_USER:*** --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):latest"
+          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):latest 
+
+    - task: CmdLine@2
+      displayName: Deploy Helm Chart to the dev cluster
+      condition:  eq(variables['Build.SourceBranchName'], 'develop')
+      inputs:
+        script: |
+          helm upgrade $(imageName) ./.helm -n $(k8sns) --set tag=$(tag)
