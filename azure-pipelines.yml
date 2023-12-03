@@ -64,4 +64,4 @@ stages:
       condition:  eq(variables['Build.SourceBranchName'], 'develop')
       inputs:
         script: |
-          helm upgrade $(imageName) ./.helm -n $(k8sns) --set tag=$(tag)
+          helm upgrade $(imageName) ./.helm -n $(k8sns) --set image.tag=$(tag)
