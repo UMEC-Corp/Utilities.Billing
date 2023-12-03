@@ -30,6 +30,7 @@ public abstract class GrainsFixtureBase
     public async Task TearDown()
     {
         await Cluster.StopAllSilosAsync();
+        await Cluster.DisposeAsync();
     }
 }
 

@@ -14,7 +14,7 @@ public class UpdateInvoiceRequestValidationTests
         };
 
         var result = validator.Validate(request);
-        Assert.True(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class UpdateInvoiceRequestValidationTests
             Id = 0,
         };
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 
     [Test]
@@ -35,6 +35,6 @@ public class UpdateInvoiceRequestValidationTests
         var validator = new UpdateInvoiceRequestValidator();
         var request = new UpdateInvoiceRequest();
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

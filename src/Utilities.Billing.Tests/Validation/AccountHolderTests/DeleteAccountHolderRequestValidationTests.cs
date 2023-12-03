@@ -14,7 +14,7 @@ public class DeleteAccountHolderRequestValidationTests
         };
 
         var result = validator.Validate(request);
-        Assert.True(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class DeleteAccountHolderRequestValidationTests
             Id = 0
         };
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 
     [Test]
@@ -35,6 +35,6 @@ public class DeleteAccountHolderRequestValidationTests
         var validator = new DeleteAccountHolderRequestValidator();
         var request = new DeleteAccountHolderRequest();
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

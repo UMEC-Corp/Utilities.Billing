@@ -14,7 +14,7 @@ public class UpdateAccountTypeRequestValidationTests
         };
 
         var result = validator.Validate(request);
-        Assert.True(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class UpdateAccountTypeRequestValidationTests
             Id = 0,
         };
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 
     [Test]
@@ -35,6 +35,6 @@ public class UpdateAccountTypeRequestValidationTests
         var validator = new UpdateAccountTypeRequestValidator();
         var request = new UpdateAccountTypeRequest();
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }
