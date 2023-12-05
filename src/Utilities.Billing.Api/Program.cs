@@ -89,7 +89,7 @@ class Program
             o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
                 .UseSnakeCaseNamingConvention();
         });
-        builder.Services.AddHostedService<DbContextMigrator<BillingDbContext>>();
+        builder.Services.AddDbContextMigrator<BillingDbContext>();
     }
 
     private static void ConfigureGrpc(WebApplicationBuilder builder)
