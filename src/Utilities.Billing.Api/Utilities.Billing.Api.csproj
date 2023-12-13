@@ -21,7 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
+    <PackageReference Include="IdentityModel.AspNetCore.OAuth2Introspection" Version="6.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.8.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.14">
       <PrivateAssets>all</PrivateAssets>
@@ -35,6 +35,7 @@
     <PackageReference Include="Serilog.Sinks.YandexCloud" Version="1.0.10" />
     <PackageReference Include="Utilities.Common.Consul" Version="1.0.27-develop" />
     <PackageReference Include="Utilities.Common.Grpc" Version="1.0.27-develop" />
+    <PackageReference Include="Utilities.Common.Security" Version="1.0.27-develop" />
     <PackageReference Include="Yandex.Cloud.Protos" Version="1.2.0">
 	    <Aliases>yandex_protos</Aliases>
     </PackageReference>

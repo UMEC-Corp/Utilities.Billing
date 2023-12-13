@@ -1,6 +1,6 @@
 using System.Net;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using IdentityModel.AspNetCore.OAuth2Introspection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -56,24 +56,12 @@ class Program
 
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
     {
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.Authority = builder.Configuration.GetValue<string>("Authentication:Authority");
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false
-                };
+        builder.Services.Configure<OAuth2IntrospectionOptions>(builder.Configuration.GetSection(nameof(OAuth2IntrospectionOptions)));
 
-                options.Backchannel = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler())
-                {
-                    DefaultRequestVersion = HttpVersion.Version20,
-                    Timeout = options.BackchannelTimeout,
-                    MaxResponseContentBufferSize = 1024 * 1024 * 10, // 10 MB 
-                };
-                options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Microsoft ASP.NET Core OpenIdConnect handler");
+        builder.Services.AddAuthentication(OAuth2IntrospectionDefaults.AuthenticationScheme)
+            .AddOAuth2Introspection(options =>
+            {
+                builder.Configuration.Bind(nameof(OAuth2IntrospectionOptions), options);
             });
 
         builder.Services.AddAuthorization(options =>
