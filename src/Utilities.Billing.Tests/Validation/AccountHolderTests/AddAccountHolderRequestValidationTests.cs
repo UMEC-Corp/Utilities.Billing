@@ -13,7 +13,7 @@ public class AddAccountHolderRequestValidationTests
             Wallet = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
-        Assert.IsTrue(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -22,6 +22,6 @@ public class AddAccountHolderRequestValidationTests
         var validator = new AddAccountHolderRequestValidator();
         var request = new AddAccountHolderRequest();
         var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

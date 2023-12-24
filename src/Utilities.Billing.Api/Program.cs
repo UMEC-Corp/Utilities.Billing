@@ -1,6 +1,6 @@
 using System.Net;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using IdentityModel.AspNetCore.OAuth2Introspection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -26,7 +26,7 @@ class Program
         builder.Host.UseOrleans(siloBuilder =>
         {
             siloBuilder.UseLocalhostClustering();
-            siloBuilder.AddMemoryGrainStorage("urls");
+            siloBuilder.AddMemoryGrainStorageAsDefault();
         });
 
         builder.Services.UseStellarWallets();
@@ -60,29 +60,17 @@ class Program
 
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
     {
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.Authority = builder.Configuration.GetValue<string>("Authentication:Authority");
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false
-                };
+        builder.Services.Configure<OAuth2IntrospectionOptions>(builder.Configuration.GetSection(nameof(OAuth2IntrospectionOptions)));
 
-                options.Backchannel = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler())
-                {
-                    DefaultRequestVersion = HttpVersion.Version20,
-                    Timeout = options.BackchannelTimeout,
-                    MaxResponseContentBufferSize = 1024 * 1024 * 10, // 10 MB 
-                };
-                options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Microsoft ASP.NET Core OpenIdConnect handler");
+        builder.Services.AddAuthentication(OAuth2IntrospectionDefaults.AuthenticationScheme)
+            .AddOAuth2Introspection(options =>
+            {
+                builder.Configuration.Bind(nameof(OAuth2IntrospectionOptions), options);
             });
 
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("RequireBillingScope", policyBuilder => { policyBuilder.RequireClaim("scope", "billing"); });
+            options.AddPolicy("RequireScope", policyBuilder => { policyBuilder.RequireClaim("scope", "billing"); });
         });
     }
 
@@ -93,7 +81,7 @@ class Program
             o.UseNpgsql(builder.Configuration.GetConnectionString(nameof(BillingDbContext)))
                 .UseSnakeCaseNamingConvention();
         });
-        builder.Services.AddHostedService<DbContextMigrator<BillingDbContext>>();
+        builder.Services.AddDbContextMigrator<BillingDbContext>();
     }
 
     private static void ConfigureGrpc(WebApplicationBuilder builder)
@@ -132,15 +120,12 @@ class Program
 
         app.UseAuthorization();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGrpcService<BillingService>();
-            endpoints.MapGrpcService<AccountsService>();
-            endpoints.MapGrpcReflectionService();
-            endpoints.MapGet("/",
-                () =>
-                    "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-        });
+        app.MapGrpcService<BillingService>();
+        app.MapGrpcService<AccountsService>();
+        app.MapGrpcReflectionService();
+        app.MapGet("/",
+            () =>
+                "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
     }
 
 }

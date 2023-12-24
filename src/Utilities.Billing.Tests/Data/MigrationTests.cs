@@ -43,8 +43,8 @@ public class MigrationTests
         var dbContext = new BillingDbContext(serviceCollection.BuildServiceProvider()
             .GetRequiredService<DbContextOptions<BillingDbContext>>());
 
-        var migrator = new DbContextMigrator<DbContext>(serviceCollection.BuildServiceProvider(), Mock.Of<IHost>(),
-            Mock.Of<ILogger<DbContextMigrator<DbContext>>>());
+        var migrator = new DbContextMigrator<BillingDbContext>(serviceCollection.BuildServiceProvider(), Mock.Of<IHost>(),
+            Mock.Of<ILogger<DbContextMigrator<BillingDbContext>>>());
 
         await dbContext.Database.OpenConnectionAsync();
 

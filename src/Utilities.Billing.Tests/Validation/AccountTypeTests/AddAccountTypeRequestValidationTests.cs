@@ -14,7 +14,7 @@ public class AddAccountTypeRequestValidationTests
             Token = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
-        Assert.IsTrue(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class AddAccountTypeRequestValidationTests
             Token = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 
     [Test]
@@ -38,7 +38,7 @@ public class AddAccountTypeRequestValidationTests
             Name = Guid.NewGuid().ToString(),
         };
         var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 
     [Test]
@@ -47,6 +47,6 @@ public class AddAccountTypeRequestValidationTests
         var validator = new AddAccountTypeRequestValidator();
         var request = new AddAccountTypeRequest();
         var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

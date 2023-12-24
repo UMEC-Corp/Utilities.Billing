@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>d9216186-9b0a-4d7c-923d-0bd4b684e708</UserSecretsId>
@@ -10,29 +10,38 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Tools" Version="2.49.1">
+    <None Remove="Protos\accounts.proto" />
+    <None Remove="Protos\billing.proto" />
+    <None Remove="Protos\data.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.59.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.5">
+    <PackageReference Include="IdentityModel.AspNetCore.OAuth2Introspection" Version="6.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.8.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.14">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Orleans.Client" Version="7.1.2" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.2" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.3" />
     <PackageReference Include="Serilog.Sinks.YandexCloud" Version="1.0.10" />
+    <PackageReference Include="Utilities.Common.Consul" Version="1.0.28-develop" />
+    <PackageReference Include="Utilities.Common.Grpc" Version="1.0.28-develop" />
+    <PackageReference Include="Utilities.Common.Security" Version="1.0.28-develop" />
     <PackageReference Include="Yandex.Cloud.Protos" Version="1.2.0">
 	    <Aliases>yandex_protos</Aliases>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Utilities.Common\src\Utilities.Common.Consul\Utilities.Common.Consul.csproj" />
-    <ProjectReference Include="..\..\..\Utilities.Common\src\Utilities.Common.Grpc\Utilities.Common.Grpc.csproj" />
     <ProjectReference Include="..\Utilities.Billing.Grains\Utilities.Billing.Grains.csproj" />
     <ProjectReference Include="..\Utilities.Billing.StellarWallets\Utilities.Billing.StellarWallets.csproj" />
   </ItemGroup>

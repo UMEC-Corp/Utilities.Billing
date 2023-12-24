@@ -14,7 +14,7 @@ public class DeleteAccountTypeRequestValidationTests
         };
 
         var result = validator.Validate(request);
-        Assert.True(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -26,6 +26,6 @@ public class DeleteAccountTypeRequestValidationTests
             Id = 0
         };
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

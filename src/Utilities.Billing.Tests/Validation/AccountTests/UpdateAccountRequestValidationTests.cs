@@ -14,7 +14,7 @@ public class UpdateAccountRequestValidationTests
             Id = 1
         };
         var result = validator.Validate(request);
-        Assert.True(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -23,7 +23,7 @@ public class UpdateAccountRequestValidationTests
         var validator = new UpdateAccountRequestValidator();
         var request = new UpdateAccountRequest();
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 
 
@@ -36,6 +36,6 @@ public class UpdateAccountRequestValidationTests
             Id = 0
         };
         var result = validator.Validate(request);
-        Assert.False(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

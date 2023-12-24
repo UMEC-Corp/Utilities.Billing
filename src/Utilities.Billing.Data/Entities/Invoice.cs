@@ -2,7 +2,7 @@
 
 namespace Utilities.Billing.Data.Entities;
 
-public class Invoice : DbEntity<long>
+public class Invoice : DbEntityWithLongKey
 {
     public long AccountId { get; set; }
     public virtual Account Account { get; set; }

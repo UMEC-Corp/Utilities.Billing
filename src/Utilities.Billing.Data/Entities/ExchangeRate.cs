@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Utilities.Common.Data;
 
 namespace Utilities.Billing.Data.Entities;
-public class ExchangeRate : DbEntity<long>
+public class ExchangeRate : DbEntityWithLongKey
 {
     public long AccountTypeId { get; set; }
     public virtual AccountType AccountType { get; set; }

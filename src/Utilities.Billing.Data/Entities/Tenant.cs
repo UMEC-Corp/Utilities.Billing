@@ -2,7 +2,7 @@
 
 namespace Utilities.Billing.Data.Entities;
 
-public class Tenant : DbEntity<Guid>
+public class Tenant : DbEntityWithGuidKey
 {
     public string Name { get; set; }
     public string Currency { get; set; }

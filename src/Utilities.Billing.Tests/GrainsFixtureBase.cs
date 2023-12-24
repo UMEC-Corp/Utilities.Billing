@@ -28,5 +28,6 @@ public abstract class GrainsFixtureBase<TSiloConfigurator> where TSiloConfigurat
     public async Task OneTimeTearDown()
     {
         await Cluster.StopAllSilosAsync();
+        await Cluster.DisposeAsync();
     }
 }

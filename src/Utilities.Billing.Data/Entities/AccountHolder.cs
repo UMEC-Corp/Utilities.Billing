@@ -2,7 +2,7 @@
 
 namespace Utilities.Billing.Data.Entities;
 
-public class AccountHolder : DbEntity<long>
+public class AccountHolder : DbEntityWithLongKey
 {
     public string Wallet { get; set; }
     public Guid TenantId { get; set; }

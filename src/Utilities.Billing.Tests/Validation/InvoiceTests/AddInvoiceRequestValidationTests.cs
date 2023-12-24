@@ -14,7 +14,7 @@ public class AddInvoiceRequestValidationTests
             Amount = 1,
         };
         var result = validator.Validate(request);
-        Assert.IsTrue(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -23,6 +23,6 @@ public class AddInvoiceRequestValidationTests
         var validator = new AddInvoiceRequestValidator();
         var request = new AddInvoiceRequest();
         var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }

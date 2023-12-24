@@ -14,7 +14,7 @@ public class AddPaymentRequestValidationTests
             Amount = 1.0,
         };
         var result = validator.Validate(request);
-        Assert.IsTrue(result.IsValid);
+        Assert.That(result.IsValid, Is.True);
     }
 
     [Test]
@@ -23,6 +23,6 @@ public class AddPaymentRequestValidationTests
         var validator = new AddPaymentRequestValidator();
         var request = new AddPaymentRequest();
         var result = validator.Validate(request);
-        Assert.IsFalse(result.IsValid);
+        Assert.That(result.IsValid, Is.False);
     }
 }
