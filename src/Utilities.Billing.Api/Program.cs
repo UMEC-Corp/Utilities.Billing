@@ -13,6 +13,7 @@ using Utilities.Billing.Data;
 using Utilities.Billing.StellarWallets;
 using Utilities.Common.Consul;
 using Utilities.Common.Data;
+using Utilities.Common.Grpc;
 using Utilities.Common.Grpc.Interceptors;
 
 namespace Utilities.Billing.Api;
@@ -88,13 +89,7 @@ class Program
     {
         builder.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, SwaggerOptionsConfigurator>();
 
-        builder.Services.AddGrpc(o =>
-        {
-            o.Interceptors.Add<ValidatingServerInterceptor>();
-            o.Interceptors.Add<LoggingServerInterceptor>();
-        }).AddJsonTranscoding();
-
-        builder.Services.AddGrpcReflection();
+        builder.Services.AddManagedGrpc().AddJsonTranscoding();
 
         builder.Services.AddGrpcSwagger();
         builder.Services.AddSwaggerGen(c =>
