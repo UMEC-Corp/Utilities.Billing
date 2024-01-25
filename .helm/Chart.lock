@@ -2,5 +2,8 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 12.12.10
-digest: sha256:4ecfc1482bfb75529b0fda44b37bda7dd39f178990c1fc348eb18d9ca352e1df
-generated: "2023-12-03T10:02:51.0146305+02:00"
+- name: netcore-service
+  repository: oci://registry.deviot.cloud/helm-charts
+  version: 0.12.0
+digest: sha256:57a2d49f476aafd644da43a242e74b1c0d2d9c6ba7eb1d6707260acae299c7d6
+generated: "2024-01-25T22:13:54.7905901+02:00"

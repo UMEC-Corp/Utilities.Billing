@@ -2,8 +2,6 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
-import "google/api/annotations.proto";
-
 package billing;
 
 message AccountType {

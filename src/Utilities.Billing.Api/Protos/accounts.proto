@@ -2,108 +2,41 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
-import "google/api/annotations.proto";
 import "Protos/data.proto";
 
 package billing;
 
 service AccountsService 
 {
-  rpc AddAccountType(AddAccountTypeRequest) returns (AddAccountTypeResponse) {
-    option (google.api.http) = {
-      post: "/v1/account-type"
-      body: "*"
-    };
-  }
+  rpc AddAccountType(AddAccountTypeRequest) returns (AddAccountTypeResponse);
 
-  rpc GetAccountTypes(GetAccountTypesRequest) returns (GetAccountTypesResponse) {
-    option (google.api.http) = {
-      get: "/v1/account-type"
-    };
-  }
+  rpc GetAccountTypes(GetAccountTypesRequest) returns (GetAccountTypesResponse);
 
-  rpc GetAccountType(GetAccountTypeRequest) returns (GetAccountTypeResponse) {
-    option (google.api.http) = {
-      get: "/v1/account-type/{id}"
-    };
-  }
+  rpc GetAccountType(GetAccountTypeRequest) returns (GetAccountTypeResponse);
 
-  rpc UpdateAccountType(UpdateAccountTypeRequest) returns (UpdateAccountTypeResponse) {
-    option (google.api.http) = {
-      put: "/v1/account-type/{id}"
-      body: "*"
-    };
-  }
+  rpc UpdateAccountType(UpdateAccountTypeRequest) returns (UpdateAccountTypeResponse);
 
-  rpc DeleteAccountType(DeleteAccountTypeRequest) returns (DeleteAccountTypeResponse) {
-    option (google.api.http) = {
-      delete: "/v1/account-type/{id}"
-    };
-  }
+  rpc DeleteAccountType(DeleteAccountTypeRequest) returns (DeleteAccountTypeResponse);
 
-  rpc AddAccount(AddAccountRequest) returns (AddAccountResponse) {
-    option (google.api.http) = {
-      post: "/v1/account"
-      body: "*"
-    };
-  }
+  rpc AddAccount(AddAccountRequest) returns (AddAccountResponse);
 
-  rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse) {
-    option (google.api.http) = {
-      get: "/v1/account"
-    };
-  }
+  rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse);
 
-  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {
-    option (google.api.http) = {
-      get: "/v1/account/{id}"
-    };
-  }
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
 
-  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
-    option (google.api.http) = {
-      put: "/v1/account/{id}"
-      body: "*"
-    };
-  }
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse);
 
-  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {
-    option (google.api.http) = {
-      delete: "/v1/account/{id}"
-    };
-  }
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
 
-  rpc GetAccountHolder(GetAccountHolderRequest) returns (GetAccountHolderResponse) {
-    option (google.api.http) = {
-      get: "/v1/account-holder/{id}"
-    };
-  }
+  rpc GetAccountHolder(GetAccountHolderRequest) returns (GetAccountHolderResponse);
 
-  rpc AddAccountHolder(AddAccountHolderRequest) returns (AddAccountHolderResponse) {
-    option (google.api.http) = {
-      post: "/v1/account-holder"
-      body: "*"
-    };
-  }
+  rpc AddAccountHolder(AddAccountHolderRequest) returns (AddAccountHolderResponse);
 
-  rpc UpdateAccountHolder(UpdateAccountHolderRequest) returns (UpdateAccountHolderResponse) {
-    option (google.api.http) = {
-      put: "/v1/account-holder/{id}"
-      body: "*"
-    };
-  }
+  rpc UpdateAccountHolder(UpdateAccountHolderRequest) returns (UpdateAccountHolderResponse);
 
-  rpc DeleteAccountHolder(DeleteAccountHolderRequest) returns (DeleteAccountHolderResponse) {
-    option (google.api.http) = {
-      delete: "/v1/account-holder/{id}"
-    };
-  }
+  rpc DeleteAccountHolder(DeleteAccountHolderRequest) returns (DeleteAccountHolderResponse);
 
-  rpc GetAccountHolders(GetAccountHoldersRequest) returns (GetAccountHoldersResponse) {
-    option (google.api.http) = {
-      get: "/v1/account-holder"
-    };
-  }
+  rpc GetAccountHolders(GetAccountHoldersRequest) returns (GetAccountHoldersResponse);
 }
 
 /* Account Type */

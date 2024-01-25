@@ -2,83 +2,33 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
-import "google/api/annotations.proto";
 import "Protos/data.proto";
 
 package billing;
 
 service BillingService 
 {
-  rpc AddInvoice(AddInvoiceRequest) returns (AddInvoiceResponse) {
-    option (google.api.http) = {
-      post: "/v1/invoice"
-      body: "*"
-    };
-  }
+  rpc AddInvoice(AddInvoiceRequest) returns (AddInvoiceResponse);
 
-  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse) {
-    option (google.api.http) = {
-      get: "/v1/invoice/{id}"
-    };
-  }
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
 
-  rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
-    option (google.api.http) = {
-      get: "/v1/invoice"
-    };
-  }
+  rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse);
 
-  rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
-    option (google.api.http) = {
-      put: "/v1/invoice/{id}"
-      body: "*"
-    };
-  }
+  rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
 
-  rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse) {
-    option (google.api.http) = {
-      delete: "/v1/invoice/{id}"
-    };
-  }
+  rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse);
 
-  rpc AddPayment(AddPaymentRequest) returns (AddPaymentResponse) {
-    option (google.api.http) = {
-      post: "/v1/payment"
-      body: "*"
-    };
-  }
+  rpc AddPayment(AddPaymentRequest) returns (AddPaymentResponse);
 
-  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse) {
-    option (google.api.http) = {
-      get: "/v1/payment/{id}"
-    };
-  }
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
 
-  rpc GetPayments(GetPaymentsRequest) returns (GetPaymentsResponse) {
-    option (google.api.http) = {
-      get: "/v1/payment"
-    };
-  }
+  rpc GetPayments(GetPaymentsRequest) returns (GetPaymentsResponse);
 
-  rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse) {
-    option (google.api.http) = {
-      put: "/v1/payment/{id}"
-      body: "*"
-    };
-  }
+  rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse);
 
-  rpc DeletePayment(DeletePaymentRequest) returns (DeletePaymentResponse) {
-    option (google.api.http) = {
-      delete: "/v1/payment/{id}"
-    };
-  }
+  rpc DeletePayment(DeletePaymentRequest) returns (DeletePaymentResponse);
 
-  rpc AddPaymentsForInvoices(AddPaymentsForInvoicesRequest) returns (AddPaymentsForInvoicesResponse) {
-    option (google.api.http) = {
-      post: "/v1/invoice/payments"
-      body: "*"
-    };
-  }
+  rpc AddPaymentsForInvoices(AddPaymentsForInvoicesRequest) returns (AddPaymentsForInvoicesResponse);
 }
 
 /* Invoice */

@@ -1,10 +1,8 @@
-using System.Net;
 using FluentValidation;
 using IdentityModel.AspNetCore.OAuth2Introspection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
@@ -14,7 +12,8 @@ using Utilities.Billing.StellarWallets;
 using Utilities.Common.Consul;
 using Utilities.Common.Data;
 using Utilities.Common.Grpc;
-using Utilities.Common.Grpc.Interceptors;
+using Utilities.Common.Monitoring.HealthChecks;
+using Utilities.Common.Monitoring.Metrics;
 
 namespace Utilities.Billing.Api;
 
@@ -24,6 +23,8 @@ class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Configuration.AddConsulConfiguration(builder.Environment.ApplicationName, builder.Environment.EnvironmentName);
+
         builder.Host.UseOrleans(siloBuilder =>
         {
             siloBuilder.UseLocalhostClustering();
@@ -32,9 +33,13 @@ class Program
 
         builder.Services.UseStellarWallets();
 
-        ConfigureConfiguration(builder);
+        builder.Host.UseSerilog((context, config) =>
+        {
+            config.ReadFrom.Configuration(context.Configuration);
+        });
 
-        ConfigureLogging(builder);
+        builder.Services.AddOpenTelemetryMetrics();
+
 
         ConfigureGrpc(builder);
 
@@ -44,19 +49,20 @@ class Program
 
         ConfigureAuthentication(builder);
 
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.All;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
+        builder.Services.AddWellKnownHealthChecks();
+
         var app = builder.Build();
 
         ConfigureEndpoints(app);
 
         await app.RunAsync();
-    }
-
-    private static void ConfigureLogging(WebApplicationBuilder builder)
-    {
-        builder.Host.UseSerilog((context, config) =>
-        {
-            config.ReadFrom.Configuration(context.Configuration);
-        });
     }
 
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
@@ -89,27 +95,16 @@ class Program
     {
         builder.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, SwaggerOptionsConfigurator>();
 
-        builder.Services.AddManagedGrpc().AddJsonTranscoding();
-
-        builder.Services.AddGrpcSwagger();
-        builder.Services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1",
-                new OpenApiInfo { Title = "Billing V1", Version = "v1" });
-        });
-    }
-
-    private static void ConfigureConfiguration(WebApplicationBuilder builder)
-    {
-        builder.Configuration.AddConsulConfiguration(builder.Environment.ApplicationName, builder.Environment.EnvironmentName);
+        builder.Services.AddManagedGrpc();
     }
 
     private static void ConfigureEndpoints(WebApplication app)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Billing V1"); });
-        // Configure the HTTP request pipeline.
-        app.UseRouting();
+        app.UseForwardedHeaders();
+
+        app.UseWellKnownHealthChecks();
+
+        app.UseOpenTelemetryPrometheusScrapingEndpoint("/metrics");
 
         app.UseAuthentication();
 
@@ -118,9 +113,7 @@ class Program
         app.MapGrpcService<BillingService>();
         app.MapGrpcService<AccountsService>();
         app.MapGrpcReflectionService();
-        app.MapGet("/",
-            () =>
-                "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+        app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
     }
 
 }

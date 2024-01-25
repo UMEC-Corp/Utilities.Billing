@@ -1,0 +1,26 @@
+netcore-service:
+  image:
+    repository: registry.deviot.cloud/utilities-billing
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+
+  environment: "Production"
+
+  consulUrl: "common-services-consul-headless.project-management.svc.cluster.local:8500"
+
+  grpc:
+    host: "grpc-billing.umecdev.deviot.cloud"
+    targetPort: 81
+    tls:
+      secretName: "wc-umecdev-deviot-cloud-crt-secret"
+
+  probes:
+    enabled: true
+
+postgresql:
+  enabled: true
+  auth:
+    database: "billing"
+    password: "billing"
+    username: "billing"
+
