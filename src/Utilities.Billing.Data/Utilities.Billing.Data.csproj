@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Utilities.Common.Data" Version="1.0.45-develop" />
+    <PackageReference Include="Utilities.Common.Data" Version="1.0.46-develop" />
 
   </ItemGroup>
 	<ItemGroup>
