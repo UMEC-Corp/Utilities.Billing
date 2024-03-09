@@ -7,7 +7,7 @@ public class UpdateInvoiceRequestValidator : AbstractValidator<UpdateInvoiceRequ
 {
     public UpdateInvoiceRequestValidator()
     {
-        var now = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var now = (ulong)DateTime.UtcNow.ToUnixTimeSeconds();
 
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Amount).GreaterThan(.0).When(x => x.HasAmount);

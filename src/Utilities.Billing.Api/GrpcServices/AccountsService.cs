@@ -31,7 +31,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
                 Id = (ulong)accountType.Id,
                 Name = accountType.Name,
                 Token = accountType.Token,
-                Created = (ulong)accountType.Created.ToTimestamp(),
+                Created = (ulong)accountType.Created.ToUnixTimeSeconds(),
             }
         };
     }
@@ -55,7 +55,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
                     Id = (ulong)x.Id,
                     Name = x.Name,
                     Token = x.Token,
-                    Created = (ulong)x.Created.ToTimestamp(),
+                    Created = (ulong)x.Created.ToUnixTimeSeconds(),
                 })
             }
         };

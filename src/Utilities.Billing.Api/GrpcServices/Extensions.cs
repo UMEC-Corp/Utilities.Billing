@@ -19,9 +19,4 @@ public static class Extensions
 
         throw new InvalidOperationException("'client_tenant' claim is malformed.");
     }
-
-    public static long ToTimestamp(this DateTime dateTime)
-    {
-        return new DateTimeOffset(dateTime).ToUnixTimeSeconds();
-    }
 }
