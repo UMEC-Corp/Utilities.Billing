@@ -4,6 +4,6 @@ dependencies:
   version: 12.12.10
 - name: netcore-service
   repository: oci://registry.deviot.cloud/helm-charts
-  version: 0.12.0
-digest: sha256:57a2d49f476aafd644da43a242e74b1c0d2d9c6ba7eb1d6707260acae299c7d6
-generated: "2024-01-25T22:13:54.7905901+02:00"
+  version: 0.18.0
+digest: sha256:dd483a8619afe95b9ed0871a8e9ac32025dd95cec07676918d658cc382cd7ee1
+generated: "2024-04-29T16:36:27.9006363+03:00"
