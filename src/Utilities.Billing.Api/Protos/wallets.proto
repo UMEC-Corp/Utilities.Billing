@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+option csharp_namespace = "Utilities.Billing.Api.Protos";
+
+import "Protos/data.proto";
+import "google/api/annotations.proto";
+package stellar;
+
+service StellarService 
+{
+  //
+  rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
+    option (google.api.http) = {
+      post: "/v1/assets"
+      body: "*"
+    };
+  }
+  
+  rpc UpdateAsset(UpdateAssetRequest) returns (UpdateAssetResponse) {
+    option (google.api.http) = {
+      put: "/v1/assets"
+      body: "*"
+    };
+  }
+
+  rpc GetAsset(GetAssetRequest) returns (GetAssetResponse) {
+    option (google.api.http) = {
+      get: "/v1/assets"
+    };
+  }
+
+  rpc CreateCustomerAccount(CreateCustomerAccountRequest) returns (CreateCustomerAccountResponse) {
+    option (google.api.http) = {
+      post: "/v1/accounts"
+      body: "*"
+    };
+  }
+
+  rpc GetCustomerAccount(GetCustomerAccountRequest) returns (GetCustomerAccountResponse) {
+    option (google.api.http) = {
+      get: "/v1/accounts"
+    };
+  }
+
+  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/v1/invoices"
+      body: "*"
+    };
+  }
+
+  rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse) {
+    option (google.api.http) = {
+      get: "/v1/invoices"
+    };
+  }
+}
+
+message AddAssetRequest
+{
+  // Asset Code
+  string assetCode = 1;
+
+  // Issuer Account Id
+  string issuerId = 2;
+
+  // Коды моделей оборудования
+  repeated string modelCodes = 3;
+}
+
+message AddAssetResponse
+{
+  // Идентификатор ассета в системе (uuid)
+  string assetId = 1;
+}
+
+message UpdateAssetRequest
+{
+  // Идентификатор ассета в системе (uuid)
+  string assetId = 1;
+  // Коды моделей оборудования
+  repeated string modelCodes = 2;
+}
+
+message UpdateAssetResponse
+{
+
+}
+
+message GetAssetRequest
+{
+
+}
+
+message GetAssetResponse
+{
+
+}
+
+message CreateCustomerAccountRequest
+{
+
+}
+
+message CreateCustomerAccountResponse
+{
+
+}
+
+message GetCustomerAccountRequest
+{
+
+}
+
+message GetCustomerAccountResponse
+{
+
+}
+
+message CreateInvoiceRequest
+{
+
+}
+
+message CreateInvoiceResponse
+{
+
+}
+
+message ListInvoicesRequest
+{
+
+}
+
+message ListInvoicesResponse
+{
+
+}

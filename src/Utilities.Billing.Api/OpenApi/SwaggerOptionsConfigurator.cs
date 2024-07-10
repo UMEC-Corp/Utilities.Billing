@@ -33,5 +33,10 @@ public class SwaggerOptionsConfigurator : IConfigureOptions<SwaggerGenOptions>
                 new List<string>()
             }
         });
+
+
+        var filePath = Path.Combine(AppContext.BaseDirectory, "Utilities.Billing.Api.xml");
+        options.IncludeXmlComments(filePath);
+        options.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
     }
 }

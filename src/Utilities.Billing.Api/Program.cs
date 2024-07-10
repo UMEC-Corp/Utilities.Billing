@@ -3,6 +3,7 @@ using IdentityModel.AspNetCore.OAuth2Introspection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
@@ -96,11 +97,24 @@ class Program
         builder.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, SwaggerOptionsConfigurator>();
 
         builder.Services.AddManagedGrpc();
+
+        builder.Services.AddGrpcSwagger();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1",
+                new OpenApiInfo { Title = "Billing V1", Version = "v1" });
+        });
+
     }
 
     private static void ConfigureEndpoints(WebApplication app)
     {
         app.UseForwardedHeaders();
+
+        app.UseSwagger();
+        app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Billing Api V1"); });
+
+        app.UseReDoc();
 
         app.UseWellKnownHealthChecks();
 
@@ -112,6 +126,7 @@ class Program
 
         app.MapGrpcService<BillingService>();
         app.MapGrpcService<AccountsService>();
+        app.MapGrpcService<StellarService>();
         app.MapGrpcReflectionService();
         app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
     }
