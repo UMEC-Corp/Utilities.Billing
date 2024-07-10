@@ -64,21 +64,21 @@ message AddAssetRequest
   // Issuer Account Id
   string issuerId = 2;
 
-  // Коды моделей оборудования
+  // РљРѕРґС‹ РјРѕРґРµР»РµР№ РѕР±РѕСЂСѓРґРѕРІР°РЅРёСЏ
   repeated string modelCodes = 3;
 }
 
 message AddAssetResponse
 {
-  // Идентификатор ассета в системе (uuid)
+  // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ Р°СЃСЃРµС‚Р° РІ СЃРёСЃС‚РµРјРµ (uuid)
   string assetId = 1;
 }
 
 message UpdateAssetRequest
 {
-  // Идентификатор ассета в системе (uuid)
+  // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ Р°СЃСЃРµС‚Р° РІ СЃРёСЃС‚РµРјРµ (uuid)
   string assetId = 1;
-  // Коды моделей оборудования
+  // РљРѕРґС‹ РјРѕРґРµР»РµР№ РѕР±РѕСЂСѓРґРѕРІР°РЅРёСЏ
   repeated string modelCodes = 2;
 }
 
