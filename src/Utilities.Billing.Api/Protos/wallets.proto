@@ -8,7 +8,7 @@ package stellar;
 
 service StellarService 
 {
-  //
+  // Добавить в систему информацию о потребляемом ресурсе ЖКХ (электроэнергия, вода и т.п.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
     option (google.api.http) = {
       post: "/v1/assets"
@@ -16,6 +16,7 @@ service StellarService
     };
   }
   
+  // Изменить параметры зарегисрированного ресурса ЖКХ (электроэнергия, вода и т.п.)
   rpc UpdateAsset(UpdateAssetRequest) returns (UpdateAssetResponse) {
     option (google.api.http) = {
       put: "/v1/assets"
@@ -23,12 +24,14 @@ service StellarService
     };
   }
 
+  // Получить параметры зарегисрированного ресурса ЖКХ (электроэнергия, вода и т.п.)
   rpc GetAsset(GetAssetRequest) returns (GetAssetResponse) {
     option (google.api.http) = {
       get: "/v1/assets"
     };
   }
 
+  // Создать лицевой счет прибора учета. Счета управляются системой, потребители могут только отслиживать движения токенов по счету.
   rpc CreateCustomerAccount(CreateCustomerAccountRequest) returns (CreateCustomerAccountResponse) {
     option (google.api.http) = {
       post: "/v1/accounts"
@@ -36,12 +39,14 @@ service StellarService
     };
   }
 
+  // Получить данные лицевого счета прибора учета. Счета управляются системой, потребители могут только отслиживать движения токенов по счету.
   rpc GetCustomerAccount(GetCustomerAccountRequest) returns (GetCustomerAccountResponse) {
     option (google.api.http) = {
       get: "/v1/accounts"
     };
   }
 
+  // Создать предварительно подписанный системой инвойс на оплату потребления ресурса
   rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
     option (google.api.http) = {
       post: "/v1/invoices"
@@ -49,6 +54,7 @@ service StellarService
     };
   }
 
+  // Получить список инвойсов по заданному прибору учета и периоду времени.
   rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse) {
     option (google.api.http) = {
       get: "/v1/invoices"
@@ -62,7 +68,7 @@ message AddAssetRequest
   string assetCode = 1;
 
   // Issuer Account Id
-  string issuerId = 2;
+  string issuer = 2;
 
   // Коды моделей оборудования
   repeated string modelCodes = 3;
@@ -89,50 +95,103 @@ message UpdateAssetResponse
 
 message GetAssetRequest
 {
-
+  // Идентификатор ассета в системе (uuid)
+  string assetId = 1;
 }
 
 message GetAssetResponse
 {
-
+  // Идентификатор ассета в системе (uuid)
+  string assetId = 1;
+  // Asset Code
+  string assetCode = 2;
+  // Issuer Account Id
+  string issuerAccount = 3;
+  // Коды моделей оборудования приборов учета. При настройке их можно уточнить в документации устройств.
+  repeated string modelCodes = 4;
+  // Системный счет. На этот счет нужно перевести токены, которые система будет перераспределять по счетам приборов учета. 
+  // Линия доверия для токена настроена автоматически.
+  string masterAccount = 5;
 }
 
 message CreateCustomerAccountRequest
 {
-
+  // Идентификатор ассета в системе (uuid)
+  string assetId = 1;
+  // Постоянный идентификатор прибора учета
+  string deviceSerial = 2;
+  // Создаем отдельный счет (G-) для прибора учета или мультиплексированный счет (M-). В случае G счетов, движение токенов будет хорошо видно в эксплорере, 
+  // балансы будут контролироваться блокчейном, отрицательные остатки будут невозможны, операции будут дороже. В случае M счетов в эксплорере операции 
+  // по расходу будут видны общим списком по всем приборам учета, будут возможны отрицательные остатки, баланс не будет контролироваться блокчейном. 
+  // В любом случае, управление созданным счетом будет происходить только через системный счет, связанный с ассетом. 
+  bool createMuxed = 3;
 }
 
 message CreateCustomerAccountResponse
 {
-
+  // Идентификаторы счетов в системе (uuid)
+  repeated string customerAccountIds = 1;
 }
 
 message GetCustomerAccountRequest
 {
-
+  // Идентификаторы счетов в системе (uuid)
+  string customerAccountId = 1;
 }
 
 message GetCustomerAccountResponse
 {
-
+  // Идентификатор счета в системе (uuid)
+  string customerAccountId = 1;
+  // Счет прибора учета
+  string customerAccount = 2;
+  // Идентификатор ассета
+  string assetId = 3;
+  // Код ассета
+  string asset = 4;
+  // Счет ассета
+  string issuer = 5;
+  // Системный счет
+  string masterAccount = 6;
 }
 
 message CreateInvoiceRequest
 {
-
+  // Идентификатор счета в системе (uuid)
+  string customerAccountId = 1;
+  // Счет прибора учета
+  string payerAccount = 2;
+  // Сумма пополнения, в токенах. Для разделителя целой и дробной части используется '.'
+  string amount = 3;
 }
 
 message CreateInvoiceResponse
 {
-
+  // Предварительно подписанная мастер-счетом транзакция. Потребителю нужно подписать транзакцию своим ключом и отправить.
+  string invoiceXdr = 1;
 }
 
 message ListInvoicesRequest
 {
-
+  // Идентификатор счета в системе (uuid)
+  string customerAccountId = 1;
+  // Начало периода, unix timestamp, секунды
+  uint64 periodFrom = 2;
+  // Окончание периода, unix timestamp, секунды
+  uint32 periodTo = 3;
 }
 
 message ListInvoicesResponse
 {
+  repeated InvoicesListItem items = 1;
 
+  message InvoicesListItem
+  {
+    // Идентификатор транзакции
+    string transactionId = 1;
+    // Сумма пополнения
+    string amount = 2;
+    // Исполнена
+    bool processed = 3;
+  }
 }
