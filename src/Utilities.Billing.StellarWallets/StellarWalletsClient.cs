@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
-using stellar_dotnet_sdk;
+using StellarDotnetSdk;
+using StellarDotnetSdk.Accounts;
+using StellarDotnetSdk.Assets;
 using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.StellarWallets;

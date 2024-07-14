@@ -16,7 +16,6 @@ service StellarService
     };
   }
   
-  // Изменить параметры зарегисрированного ресурса ЖКХ (электроэнергия, вода и т.п.)
   rpc UpdateAsset(UpdateAssetRequest) returns (UpdateAssetResponse) {
     option (google.api.http) = {
       put: "/v1/assets"
@@ -24,14 +23,12 @@ service StellarService
     };
   }
 
-  // Получить параметры зарегисрированного ресурса ЖКХ (электроэнергия, вода и т.п.)
   rpc GetAsset(GetAssetRequest) returns (GetAssetResponse) {
     option (google.api.http) = {
       get: "/v1/assets"
     };
   }
 
-  // Создать лицевой счет прибора учета. Счета управляются системой, потребители могут только отслиживать движения токенов по счету.
   rpc CreateCustomerAccount(CreateCustomerAccountRequest) returns (CreateCustomerAccountResponse) {
     option (google.api.http) = {
       post: "/v1/accounts"
@@ -39,7 +36,6 @@ service StellarService
     };
   }
 
-  // Получить данные лицевого счета прибора учета. Счета управляются системой, потребители могут только отслиживать движения токенов по счету.
   rpc GetCustomerAccount(GetCustomerAccountRequest) returns (GetCustomerAccountResponse) {
     option (google.api.http) = {
       get: "/v1/accounts"
@@ -159,7 +155,6 @@ message CreateInvoiceRequest
 {
   // Идентификатор счета в системе (uuid)
   string customerAccountId = 1;
-  // Счет прибора учета
   string payerAccount = 2;
   // Сумма пополнения, в токенах. Для разделителя целой и дробной части используется '.'
   string amount = 3;
