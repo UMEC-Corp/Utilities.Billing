@@ -6,16 +6,18 @@ import "Protos/data.proto";
 import "google/api/annotations.proto";
 package stellar;
 
+// API for issuing invoices for consumed housing and communal services in Stellar.
 service StellarService 
 {
-  // Добавить в систему информацию о потребляемом ресурсе ЖКХ (электроэнергия, вода и т.п.)
+  // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
     option (google.api.http) = {
       post: "/v1/assets"
       body: "*"
     };
   }
-  
+
+  // Change the parameters of a registered housing and communal services resource (electricity, water, etc.)
   rpc UpdateAsset(UpdateAssetRequest) returns (UpdateAssetResponse) {
     option (google.api.http) = {
       put: "/v1/assets"
@@ -23,12 +25,14 @@ service StellarService
     };
   }
 
+  // Get the parameters of the registered housing and communal services resource (electricity, water, etc.)
   rpc GetAsset(GetAssetRequest) returns (GetAssetResponse) {
     option (google.api.http) = {
       get: "/v1/assets"
     };
   }
 
+  // Create a personal meter account. Accounts are managed by the system, consumers can only track the movements of tokens in the account.
   rpc CreateCustomerAccount(CreateCustomerAccountRequest) returns (CreateCustomerAccountResponse) {
     option (google.api.http) = {
       post: "/v1/accounts"
@@ -36,13 +40,14 @@ service StellarService
     };
   }
 
+  // Receive personal account information for the metering device. Accounts are managed by the system, consumers can only track the movements of tokens in the account.
   rpc GetCustomerAccount(GetCustomerAccountRequest) returns (GetCustomerAccountResponse) {
     option (google.api.http) = {
       get: "/v1/accounts"
     };
   }
 
-  // Создать предварительно подписанный системой инвойс на оплату потребления ресурса
+  // Create an invoice pre-signed by the system to pay for resource consumption
   rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
     option (google.api.http) = {
       post: "/v1/invoices"
@@ -50,7 +55,7 @@ service StellarService
     };
   }
 
-  // Получить список инвойсов по заданному прибору учета и периоду времени.
+  // Get a list of invoices for a given meter and time period.
   rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse) {
     option (google.api.http) = {
       get: "/v1/invoices"
@@ -66,21 +71,21 @@ message AddAssetRequest
   // Issuer Account Id
   string issuer = 2;
 
-  // Коды моделей оборудования
+  // Equipment model codes
   repeated string modelCodes = 3;
 }
 
 message AddAssetResponse
 {
-  // Идентификатор ассета в системе (uuid)
+  // Asset ID in the system (uuid)
   string assetId = 1;
 }
 
 message UpdateAssetRequest
 {
-  // Идентификатор ассета в системе (uuid)
+  // Asset ID in the system (uuid)
   string assetId = 1;
-  // Коды моделей оборудования
+  // Equipment model codes
   repeated string modelCodes = 2;
 }
 
@@ -91,88 +96,89 @@ message UpdateAssetResponse
 
 message GetAssetRequest
 {
-  // Идентификатор ассета в системе (uuid)
+  // Asset ID in the system (uuid)
   string assetId = 1;
 }
 
 message GetAssetResponse
 {
-  // Идентификатор ассета в системе (uuid)
+  // Asset ID in the system (uuid)
   string assetId = 1;
   // Asset Code
   string assetCode = 2;
   // Issuer Account Id
   string issuerAccount = 3;
-  // Коды моделей оборудования приборов учета. При настройке их можно уточнить в документации устройств.
+  // Model codes for metering equipment. When setting them up, you can check the device documentation.
   repeated string modelCodes = 4;
-  // Системный счет. На этот счет нужно перевести токены, которые система будет перераспределять по счетам приборов учета. 
-  // Линия доверия для токена настроена автоматически.
+  // System account. You need to transfer tokens to this account, which the system will redistribute across meter accounts. 
+  // The trustline for the token is configured automatically.
   string masterAccount = 5;
 }
 
 message CreateCustomerAccountRequest
 {
-  // Идентификатор ассета в системе (uuid)
+  // Asset ID in the system (uuid)
   string assetId = 1;
-  // Постоянный идентификатор прибора учета
+  // Permanent identifier of the metering device
   string deviceSerial = 2;
-  // Создаем отдельный счет (G-) для прибора учета или мультиплексированный счет (M-). В случае G счетов, движение токенов будет хорошо видно в эксплорере, 
-  // балансы будут контролироваться блокчейном, отрицательные остатки будут невозможны, операции будут дороже. В случае M счетов в эксплорере операции 
-  // по расходу будут видны общим списком по всем приборам учета, будут возможны отрицательные остатки, баланс не будет контролироваться блокчейном. 
-  // В любом случае, управление созданным счетом будет происходить только через системный счет, связанный с ассетом. 
+  // Create a separate account (G-) for the meter or a multiplexed account (M-). In the case of G accounts, the movement of tokens will be clearly visible in the explorer, 
+  // balances will be controlled by the blockchain, negative balances will not be possible, transactions will be more expensive. In the case of M accounts in the operation explorer 
+  // by consumption will be visible in a general list for all metering devices, negative balances will be possible, the balance will not be controlled by the blockchain. 
+  // In any case, the created account will be managed only through the system account associated with the asset. 
   bool createMuxed = 3;
 }
 
 message CreateCustomerAccountResponse
 {
-  // Идентификаторы счетов в системе (uuid)
+  // Account identifiers in the system (uuid)
   repeated string customerAccountIds = 1;
 }
 
 message GetCustomerAccountRequest
 {
-  // Идентификаторы счетов в системе (uuid)
+  // Account identifier in the system (uuid)
   string customerAccountId = 1;
 }
 
 message GetCustomerAccountResponse
 {
-  // Идентификатор счета в системе (uuid)
+  // Account identifier in the system (uuid)
   string customerAccountId = 1;
-  // Счет прибора учета
+  // Meter account
   string customerAccount = 2;
-  // Идентификатор ассета
+  // Asset ID
   string assetId = 3;
-  // Код ассета
+  // Asset code
   string asset = 4;
-  // Счет ассета
+  // Asset account
   string issuer = 5;
-  // Системный счет
+  // System account
   string masterAccount = 6;
 }
 
 message CreateInvoiceRequest
 {
-  // Идентификатор счета в системе (uuid)
+  // Account identifier in the system (uuid)
   string customerAccountId = 1;
+  // Payer account
   string payerAccount = 2;
-  // Сумма пополнения, в токенах. Для разделителя целой и дробной части используется '.'
+  // Replenishment amount, in tokens. '.' is used as a decimal separator.
   string amount = 3;
 }
 
 message CreateInvoiceResponse
 {
-  // Предварительно подписанная мастер-счетом транзакция. Потребителю нужно подписать транзакцию своим ключом и отправить.
+  // Transaction pre-signed by the master account. The consumer needs to sign the transaction with their key and submit.
   string invoiceXdr = 1;
 }
 
 message ListInvoicesRequest
 {
-  // Идентификатор счета в системе (uuid)
+  // Account ID in the system (uuid)
   string customerAccountId = 1;
-  // Начало периода, unix timestamp, секунды
+  // Start of period, unix timestamp, seconds
   uint64 periodFrom = 2;
-  // Окончание периода, unix timestamp, секунды
+  // End of period, unix timestamp, seconds
   uint32 periodTo = 3;
 }
 
@@ -182,11 +188,11 @@ message ListInvoicesResponse
 
   message InvoicesListItem
   {
-    // Идентификатор транзакции
+    // Transaction ID
     string transactionId = 1;
-    // Сумма пополнения
+    // Replenishment amount, in tokens
     string amount = 2;
-    // Исполнена
+    // Fullfilled
     bool processed = 3;
   }
 }
