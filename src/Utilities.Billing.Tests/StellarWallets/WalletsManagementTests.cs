@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using stellar_dotnet_sdk;
+using StellarDotnetSdk.Accounts;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.StellarWallets;
 
