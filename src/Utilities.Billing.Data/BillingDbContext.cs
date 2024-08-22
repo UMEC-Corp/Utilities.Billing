@@ -16,6 +16,8 @@ public class BillingDbContext : DbContext
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }
+    public DbSet<Asset> Assets { get; set; }
+    public DbSet<EquipmentModel> EquipmentModels { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Tenant>(e =>
@@ -53,6 +55,11 @@ public class BillingDbContext : DbContext
         modelBuilder.Entity<Invoice>(e =>
         {
             e.HasOne(x => x.Account).WithMany(x => x.Invoices).HasForeignKey(x => x.AccountId);
+        });
+
+        modelBuilder.Entity<EquipmentModel>(e =>
+        {
+            e.HasOne(x => x.Asset).WithMany(x => x.EquipmentModels).HasForeignKey(x => x.AssetId);
         });
 
         modelBuilder.AddSoftDeleteFilters();

@@ -48,4 +48,5 @@ public class StellarWalletsSettings
 {
     public string HorizonUrl { get; set; }
     public string SecretSeed { get; set; }
+    public string MassterAccount { get; set; }
 }
