@@ -57,6 +57,14 @@ public class BillingDbContext : DbContext
             e.HasOne(x => x.Account).WithMany(x => x.Invoices).HasForeignKey(x => x.AccountId);
         });
 
+        modelBuilder.Entity<Asset>(e =>
+        {
+            e.Property(x => x.Code).IsRequired();
+            e.Property(x => x.Issuer).IsRequired();
+
+            e.HasOne(x => x.Tenant).WithMany(x => x.Assets).HasForeignKey(x => x.TenantId);
+        });
+
         modelBuilder.Entity<EquipmentModel>(e =>
         {
             e.HasOne(x => x.Asset).WithMany(x => x.EquipmentModels).HasForeignKey(x => x.AssetId);
