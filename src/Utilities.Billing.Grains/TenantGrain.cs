@@ -1,19 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Orleans.Runtime;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
 using Utilities.Billing.Data.Entities;
+using Utilities.Billing.StellarWallets;
 
 namespace Utilities.Billing.Grains;
 public class TenantGrain : Grain, ITenantGrain
 {
     private readonly BillingDbContext _dbContext;
     private readonly IPaymentSystem _paymentSystem;
+    private readonly IOptionsMonitor<StellarWalletsSettings> _options;
     private Tenant _tenantState;
 
-    public TenantGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem)
+    public TenantGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem, IOptionsMonitor<StellarWalletsSettings> options)
     {
         _dbContext = dbContext;
         _paymentSystem = paymentSystem;
+        _options = options;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -73,7 +78,7 @@ public class TenantGrain : Grain, ITenantGrain
 
         if (invoices.Count != invoiceIds.Count)
         {
-            throw Errors.NotFound(nameof(Invoice), invoiceIds.Except(invoices.Select(x=>x.Id)).ToList());
+            throw Errors.NotFound(nameof(Invoice), invoiceIds.Except(invoices.Select(x => x.Id)).ToList());
         }
 
         // Preload accounts to the db context
@@ -163,7 +168,7 @@ public class TenantGrain : Grain, ITenantGrain
 
     private void CheckGrainState()
     {
-        if(_tenantState is null)
+        if (_tenantState is null)
         {
             throw Errors.GrainIsNotInitialized(nameof(TenantGrain), this.GetPrimaryKey());
         }
@@ -225,6 +230,65 @@ public class TenantGrain : Grain, ITenantGrain
 
         return reply;
     }
+
+    public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
+    {
+        var asset = new Asset
+        {
+            Code = command.AssetCode,
+        };
+        await _dbContext.Assets.AddAsync(asset);
+
+        foreach (var code in command.ModelCodes)
+        {
+            var model = new EquipmentModel
+            {
+                Code = code,
+                Asset = asset
+            };
+            await _dbContext.EquipmentModels.AddAsync(model);
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return new AddAssetReply { Id = asset.Id };
+    }
+
+    public async Task<GetAssetReply> GetAsset(GetAssetCommand command)
+    {
+        var asset = await _dbContext.Assets.FindAsync(command.Id);
+
+        var response = new GetAssetReply
+        {
+            Id = asset.Id,
+            Code = asset.Code,
+            IssuerAccount = asset.Issuer,
+            MasterAccount = _options.CurrentValue.MassterAccount,
+        };
+        response.ModelCodes.Add(asset.EquipmentModels.Select(x => x.Code));
+
+        return response;
+    }
+
+    public async Task UpdateAsset(UpdateAssetCommand command)
+    {
+        var asset = await _dbContext.Assets.FindAsync(command.Id);
+        var existsModels = asset.EquipmentModels.Select(x => x.Code);
+
+        var removingModels = asset.EquipmentModels.Where(x => !command.ModelCodes.Contains(x.Code)).ToList();
+        foreach (var model in removingModels)
+        {
+            _dbContext.Remove(model);
+        }
+
+        var newModels = command.ModelCodes.Except(existsModels).ToList();
+        foreach (var code in newModels)
+        {
+            await _dbContext.AddAsync(new EquipmentModel { Code = code, Asset = asset });
+        }
+    }
+
+
 }
 
 public static class Errors

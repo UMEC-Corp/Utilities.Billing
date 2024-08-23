@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Utilities.Billing.Contracts\Utilities.Billing.Contracts.csproj" />
     <ProjectReference Include="..\Utilities.Billing.Data\Utilities.Billing.Data.csproj" />
+    <ProjectReference Include="..\Utilities.Billing.StellarWallets\Utilities.Billing.StellarWallets.csproj" />
   </ItemGroup>
 
 </Project>

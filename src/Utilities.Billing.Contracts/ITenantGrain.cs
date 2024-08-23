@@ -8,6 +8,50 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task<AccountTypeItem> GetAccountTypeAsync(GetAccountTypeQuery query);
     Task<AddPaymentsReply> AddPaymentsForInvoicesAsync(AddPaymentsForInvoicesCommand command);
     Task<AddInvoicesReply> AddInvoicesAsync(AddInvoicesCommand addInvoicesCommand);
+
+    Task<AddAssetReply> AddAsset(AddAssetCommand command);
+    Task<GetAssetReply> GetAsset(GetAssetCommand command);
+    Task UpdateAsset(UpdateAssetCommand command);
+}
+
+
+
+[GenerateSerializer]
+public class UpdateAssetCommand
+{
+    public string Id { get; set; }
+    public ICollection<string> ModelCodes { get; set; } = new List<string>();
+}
+
+[GenerateSerializer]
+public class GetAssetReply
+{
+    public Guid Id { get; set; }
+    public string Code { get; set; }
+    public string IssuerAccount { get; set; }
+    public string MasterAccount { get; set; }
+    public ICollection<string> ModelCodes { get; set; } = new List<string>();
+
+}
+
+[GenerateSerializer]
+public class GetAssetCommand
+{
+    public string Id { get; set; }
+}
+
+[GenerateSerializer]
+public class AddAssetReply
+{
+    public Guid Id { get; set; }
+}
+
+[GenerateSerializer]
+public class AddAssetCommand
+{
+    public string AssetCode { get; set; }
+    public string Issuer { get; set; }
+    public ICollection<string> ModelCodes { get; set; } = new List<string>();
 }
 
 [GenerateSerializer]
