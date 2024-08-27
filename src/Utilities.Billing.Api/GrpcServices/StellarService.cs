@@ -54,7 +54,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
             IssuerAccount = reply.IssuerAccount,
             MasterAccount = reply.MasterAccount,
         };
-        response.ModelCodes.Add(response.ModelCodes);
+        response.ModelCodes.Add(reply.ModelCodes);
 
         return response;
     }
