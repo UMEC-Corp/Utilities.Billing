@@ -3,6 +3,7 @@ public interface IPaymentSystem
 {
     Task AddPaymentAsync(AddPaymentCommand command);
     Task<string> CreateWalletAsync(CreateWalletCommand command);
+    Task<string> GetMasterAccount();
 }
 
 public record CreateWalletCommand(

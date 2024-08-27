@@ -19,17 +19,24 @@ public interface ITenantGrain : IGrainWithGuidKey
 [GenerateSerializer]
 public class UpdateAssetCommand
 {
+    [Id(0)]
     public string Id { get; set; }
+    [Id(1)]
     public ICollection<string> ModelCodes { get; set; } = new List<string>();
 }
 
 [GenerateSerializer]
 public class GetAssetReply
 {
+    [Id(0)]
     public Guid Id { get; set; }
+    [Id(1)]
     public string Code { get; set; }
+    [Id(2)]
     public string IssuerAccount { get; set; }
+    [Id(3)]
     public string MasterAccount { get; set; }
+    [Id(4)]
     public ICollection<string> ModelCodes { get; set; } = new List<string>();
 
 }
@@ -37,20 +44,25 @@ public class GetAssetReply
 [GenerateSerializer]
 public class GetAssetCommand
 {
+    [Id(0)]
     public string Id { get; set; }
 }
 
 [GenerateSerializer]
 public class AddAssetReply
 {
+    [Id(0)]
     public Guid Id { get; set; }
 }
 
 [GenerateSerializer]
 public class AddAssetCommand
 {
+    [Id(0)]
     public string AssetCode { get; set; }
+    [Id(1)]
     public string Issuer { get; set; }
+    [Id(2)]
     public ICollection<string> ModelCodes { get; set; } = new List<string>();
 }
 

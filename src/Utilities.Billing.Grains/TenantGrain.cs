@@ -11,14 +11,12 @@ public class TenantGrain : Grain, ITenantGrain
 {
     private readonly BillingDbContext _dbContext;
     private readonly IPaymentSystem _paymentSystem;
-    private readonly IOptionsMonitor<StellarWalletsSettings> _options;
     private Tenant _tenantState;
 
-    public TenantGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem, IOptionsMonitor<StellarWalletsSettings> options)
+    public TenantGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem)
     {
         _dbContext = dbContext;
         _paymentSystem = paymentSystem;
-        _options = options;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -236,8 +234,12 @@ public class TenantGrain : Grain, ITenantGrain
         var asset = new Asset
         {
             Code = command.AssetCode,
+            Issuer = command.Issuer,
+            TenantId = this.GetPrimaryKey(),
         };
         await _dbContext.Assets.AddAsync(asset);
+
+        await _dbContext.SaveChangesAsync();
 
         foreach (var code in command.ModelCodes)
         {
@@ -256,16 +258,17 @@ public class TenantGrain : Grain, ITenantGrain
 
     public async Task<GetAssetReply> GetAsset(GetAssetCommand command)
     {
-        var asset = await _dbContext.Assets.FindAsync(command.Id);
+        var asset = await _dbContext.Assets.FindAsync(new Guid(command.Id));
 
         var response = new GetAssetReply
         {
             Id = asset.Id,
             Code = asset.Code,
             IssuerAccount = asset.Issuer,
-            MasterAccount = _options.CurrentValue.MassterAccount,
+            MasterAccount = await _paymentSystem.GetMasterAccount(),
         };
-        response.ModelCodes.Add(asset.EquipmentModels.Select(x => x.Code));
+        //response.ModelCodes.Add(asset.EquipmentModels.Select(x => x.Code));
+        response.ModelCodes.Add(await _dbContext.EquipmentModels.Where(x => x.AssetId == asset.Id).Select(x => x.Code).ToListAsync());
 
         return response;
     }
@@ -273,9 +276,10 @@ public class TenantGrain : Grain, ITenantGrain
     public async Task UpdateAsset(UpdateAssetCommand command)
     {
         var asset = await _dbContext.Assets.FindAsync(command.Id);
-        var existsModels = asset.EquipmentModels.Select(x => x.Code);
+        var equipsQuery = _dbContext.EquipmentModels.Where(x => x.AssetId == asset.Id);
+        var existsModels = await equipsQuery.Select(x => x.Code).ToListAsync();
 
-        var removingModels = asset.EquipmentModels.Where(x => !command.ModelCodes.Contains(x.Code)).ToList();
+        var removingModels = await equipsQuery.Where(x => !command.ModelCodes.Contains(x.Code)).ToListAsync();
         foreach (var model in removingModels)
         {
             _dbContext.Remove(model);
