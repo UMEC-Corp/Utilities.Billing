@@ -32,7 +32,7 @@ class Program
             siloBuilder.AddMemoryGrainStorageAsDefault();
         });
 
-        builder.Services.UseStellarWallets();
+        builder.Services.UseStellarWallets(builder.Configuration);
 
         builder.Host.UseSerilog((context, config) =>
         {

@@ -5,7 +5,7 @@ using StellarDotnetSdk.Assets;
 using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.StellarWallets;
-class StellarWalletsClient : IPaymentSystem
+public class StellarWalletsClient : IPaymentSystem
 {
     private readonly IOptionsMonitor<StellarWalletsSettings> _options;
 
@@ -42,11 +42,16 @@ class StellarWalletsClient : IPaymentSystem
 
         return null;
     }
+
+    public async Task<string> GetMasterAccount()
+    {
+        return _options.CurrentValue.MasterAccount;
+    }
 }
 
 public class StellarWalletsSettings
 {
     public string HorizonUrl { get; set; }
     public string SecretSeed { get; set; }
-    public string MassterAccount { get; set; }
+    public string MasterAccount { get; set; }
 }
