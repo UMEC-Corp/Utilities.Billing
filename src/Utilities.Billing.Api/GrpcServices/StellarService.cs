@@ -12,7 +12,7 @@ using Utilities.Billing.StellarWallets;
 namespace Utilities.Billing.Api.GrpcServices;
 
 
-[Authorize(Policy = "RequireBillingScope")]
+[Authorize(Policy = "RequireScope")]
 public class StellarService : Protos.StellarService.StellarServiceBase
 {
     private readonly IGrainFactory _clusterClient;
