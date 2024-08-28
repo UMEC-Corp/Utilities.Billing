@@ -1,6 +1,7 @@
 ﻿namespace Utilities.Billing.Contracts;
 public interface IPaymentSystem
 {
+    Task<string> AddAsset(AddStellarAssetCommand command);
     Task AddPaymentAsync(AddPaymentCommand command);
     Task<string> CreateWalletAsync(CreateWalletCommand command);
     Task<string> GetMasterAccount();
@@ -24,3 +25,10 @@ public record AddPaymentCommand
     string BuyerTokenWallet,
     string SellerTokenWallet
 );
+
+public class AddStellarAssetCommand
+{
+    public string AssetCode { get; set; }
+    public string IssuerAccountId { get; set; }
+    public string ReceiverAccountId { get; set; }
+}
