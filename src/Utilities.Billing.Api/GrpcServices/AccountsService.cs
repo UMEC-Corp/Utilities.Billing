@@ -18,7 +18,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
     public override async Task<GetAccountTypeResponse> GetAccountType(GetAccountTypeRequest request,
         ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
         var accountType = await tenant.GetAccountTypeAsync(new GetAccountTypeQuery
         {
             Id = (long)request.Id,
@@ -39,7 +39,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
     public override async Task<GetAccountTypesResponse> GetAccountTypes(GetAccountTypesRequest request,
         ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
         var accountTypes = await tenant.GetAccountTypesAsync(new GetAccountTypesQuery
         {
             Offset = (int)request.Offset,
@@ -63,7 +63,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
 
     public override async Task<AddAccountTypeResponse> AddAccountType(AddAccountTypeRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
 
         var id = await tenant.AddAccountTypeAsync(new AddAccountTypeCommand
         {
@@ -79,7 +79,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
 
     public override async Task<UpdateAccountTypeResponse> UpdateAccountType(UpdateAccountTypeRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
 
         var command = new UpdateAccountTypeCommand();
 
@@ -100,7 +100,7 @@ public class AccountsService : Protos.AccountsService.AccountsServiceBase
 
     public override async Task<DeleteAccountTypeResponse> DeleteAccountType(DeleteAccountTypeRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
 
         var command = new DeleteAccountTypeCommand();
 

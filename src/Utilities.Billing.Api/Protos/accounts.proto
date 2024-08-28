@@ -43,39 +43,47 @@ service AccountsService
 
 message GetAccountTypeRequest {
   uint64 id = 1;
+  string tenantId = 2;
 }
 
 message GetAccountTypeResponse {
   AccountType accountType = 1;
 }
 message GetAccountTypesRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
+  string tenantId = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
 }
 
 message GetAccountTypesResponse {
-  repeated AccountType accountTypes = 1;
+  repeated AccountType accountTypes = 2;
 }
 
 message AddAccountTypeRequest {
+  string tenantId = 1;
   string name = 2;
-  string token = 3;}
+  string token = 3;
+}
+
 
 message AddAccountTypeResponse {
   uint64 id = 1;
 }
 
 message UpdateAccountTypeRequest {
-  uint64 id = 1;
-  optional string name = 2;
-  optional string token = 3;
+  string tenantId = 1;
+  uint64 id = 2;
+  optional string name = 3;
+  optional string token = 4;
+
 }
 
 message UpdateAccountTypeResponse {
 }
 
 message DeleteAccountTypeRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message DeleteAccountTypeResponse {
@@ -84,7 +92,8 @@ message DeleteAccountTypeResponse {
 /* Account Holder */
 
 message GetAccountHolderRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message GetAccountHolderResponse {
@@ -92,8 +101,9 @@ message GetAccountHolderResponse {
 }
 
 message GetAccountHoldersRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
+  string tenantId = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
 }
 
 message GetAccountHoldersResponse {
@@ -101,6 +111,7 @@ message GetAccountHoldersResponse {
 }
 
 message AddAccountHolderRequest {
+  string tenantId = 1;
   string wallet = 2;
 }
 
@@ -109,15 +120,17 @@ message AddAccountHolderResponse {
 }
 
 message UpdateAccountHolderRequest {
-  uint64 id = 1;
-  string wallet = 2;
+  string tenantId = 1;
+  uint64 id = 2;
+  string wallet = 3;
 }
 
 message UpdateAccountHolderResponse {
 }
 
 message DeleteAccountHolderRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message DeleteAccountHolderResponse {
@@ -126,8 +139,9 @@ message DeleteAccountHolderResponse {
 /* Account */
 
 message GetAccountsRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
+  string tenantId = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
 }
 
 message GetAccountsResponse {
@@ -135,7 +149,8 @@ message GetAccountsResponse {
 }
 
 message GetAccountRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message GetAccountResponse {
@@ -143,6 +158,7 @@ message GetAccountResponse {
 }
 
 message AddAccountRequest {
+  string tenantId = 1;
   uint64 accountHolderId = 2;
   uint64 accountTypeId = 3;
 }
@@ -152,16 +168,18 @@ message AddAccountResponse {
 }
 
 message UpdateAccountRequest {
-  uint64 id = 1;
-  optional uint64 accountHolderId = 2;
-  optional uint64 accountTypeId = 3;
+  string tenantId = 1;
+  uint64 id = 2;
+  optional uint64 accountHolderId = 3;
+  optional uint64 accountTypeId = 4;
 }
 
 message UpdateAccountResponse { 
 }
 
 message DeleteAccountRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message DeleteAccountResponse {

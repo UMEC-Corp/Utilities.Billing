@@ -18,7 +18,7 @@ public class BillingService : Protos.BillingService.BillingServiceBase
 
     public override async Task<AddInvoiceResponse> AddInvoice(AddInvoiceRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
         var reply = await tenant.AddInvoicesAsync(new AddInvoicesCommand
         {
             Items =
@@ -42,7 +42,7 @@ public class BillingService : Protos.BillingService.BillingServiceBase
     public override async Task<AddPaymentsForInvoicesResponse> AddPaymentsForInvoices(
         AddPaymentsForInvoicesRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetTenant(request.TenantId);
         var reply = await tenant.AddPaymentsForInvoicesAsync(new AddPaymentsForInvoicesCommand
         {
             InvoiceIds = { request.InvoiceIds.Select(x => (long)x) }
