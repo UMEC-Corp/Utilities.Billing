@@ -1,16 +1,16 @@
 ﻿namespace Utilities.Billing.Contracts;
 public interface IPaymentSystem
 {
-    Task<string> AddAsset(AddStellarAssetCommand command);
+    Task AddAssetAsync(AddStellarAssetCommand command);
     Task AddPaymentAsync(AddPaymentCommand command);
     Task<string> CreateWalletAsync(CreateWalletCommand command);
     Task<string> GetMasterAccount();
 }
 
-public record CreateWalletCommand(
-    Guid TenantId,
-    string Token
-);
+public class CreateWalletCommand
+{
+    public bool CreateMuxed { get; set; }
+}
 
 public record AddPaymentCommand
 (

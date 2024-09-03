@@ -3,6 +3,7 @@ using StellarDotnetSdk;
 using StellarDotnetSdk.Accounts;
 using StellarDotnetSdk.Assets;
 using StellarDotnetSdk.Operations;
+using StellarDotnetSdk.Responses;
 using StellarDotnetSdk.Transactions;
 using StellarDotnetSdk.Xdr;
 using System.Runtime;
@@ -24,64 +25,98 @@ public class StellarWalletsClient : IPaymentSystem
 
     public async Task<string> CreateWalletAsync(CreateWalletCommand command)
     {
-        var issuerKeypair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
-        var asset = StellarDotnetSdk.Assets.Asset.CreateNonNativeAsset($"UMEC{command.TenantId:N,5}{command.Token}", issuerKeypair.Address);
-
+        UseNetwork();
         var server = new Server(_options.CurrentValue.HorizonUrl);
-        var account = await server.Accounts.WithSigner(issuerKeypair.Address).Account(asset.Code);
 
-        //const transaction = TransactionBuilder.BuildFeeBumpTransaction(account, {
-        //        fee: StellarSdk.BASE_FEE,
-        //        networkPassphrase: StellarSdk.Networks.TESTNET,
-        //    })
-        //    // The `changeTrust` operation creates (or alters) a trustline
-        //    // The `limit` parameter below is optional
-        //    .addOperation(
-        //    StellarSdk.Operation.changeTrust({
-        //    asset: astroDollar,
-        //    limit: "1000",
-        //    source: distributorKeypair.publicKey(),
-        //}),
-        //);
+        var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
+        var masterAccount = await server.Accounts.Account(masterKeyPair.AccountId);
 
-        return null;
+        var newKeyPair = KeyPair.Random();
+
+        var createAccountOperation = new CreateAccountOperation(newKeyPair, "1", masterKeyPair);
+
+        var setOptionsOperation = new SetOptionsOperation(newKeyPair);
+        setOptionsOperation.SetMasterKeyWeight(0);
+        setOptionsOperation.SetLowThreshold(1);
+        setOptionsOperation.SetMediumThreshold(2);
+        setOptionsOperation.SetHighThreshold(3);
+        setOptionsOperation.SetSigner(masterKeyPair.AccountId, 4);
+
+        var transaction = new TransactionBuilder(masterAccount)
+            .AddOperation(createAccountOperation)
+            .AddOperation(setOptionsOperation)
+            .Build();
+
+        transaction.Sign(masterKeyPair);
+        transaction.Sign(newKeyPair);
+
+        await SendTran(server, transaction);
+
+        return newKeyPair.AccountId;
     }
 
-
-    public async Task<string> AddAsset(AddStellarAssetCommand command)
+    public async Task AddAssetAsync(AddStellarAssetCommand command)
     {
-        //Set network and server
-        Network.UseTestNetwork();
+        UseNetwork();
         var server = new Server(_options.CurrentValue.HorizonUrl);
 
-        //Source keypair from the secret seed
-        var receiver = KeyPair.FromAccountId(command.ReceiverAccountId);
+        var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
+        var receiverKeyPair = KeyPair.FromAccountId(command.ReceiverAccountId);
+        var receiverAccount = await server.Accounts.Account(receiverKeyPair.AccountId);
 
-        //Load source account data
-        var receiverAccountResponse = await server.Accounts.Account(receiver.AccountId);
-
-        //Create source account object
-        var receiverAccount = new Account(receiver.AccountId, receiverAccountResponse.SequenceNumber);
-
-        //Create asset object with specific amount
-        //You can use native or non native ones.
         var asset = StellarDotnetSdk.Assets.Asset.CreateNonNativeAsset(command.AssetCode, command.IssuerAccountId);
 
-        //Create operation
-        var operation = new ChangeTrustOperation(asset);
+        var changeTrustOperation = new ChangeTrustOperation(asset);
 
-        //Create transaction and add the payment operation we created
-        var transaction = new TransactionBuilder(receiverAccount).AddOperation(operation).Build();
+        var transaction = new TransactionBuilder(receiverAccount).AddOperation(changeTrustOperation).Build();
 
-        //Export to Unsigned XDR Base64 (Use this in case you want to sign it in a external signer)
-        string unsignedXDR = transaction.ToUnsignedEnvelopeXdrBase64();
+        transaction.Sign(masterKeyPair);
 
-        return unsignedXDR;
+        await SendTran(server, transaction);
     }
 
     public async Task<string> GetMasterAccount()
     {
         return KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed).AccountId;
+    }
+
+    private void UseNetwork()
+    {
+        Network.UseTestNetwork();
+    }
+
+    private async Task SendTran(Server server, StellarDotnetSdk.Transactions.Transaction transaction)
+    {
+        var response = await server.SubmitTransaction(transaction);
+        if (!response.IsSuccess)
+        {
+            throw new StellarTransactionFailException(response);
+        }
+
+    }
+
+}
+
+
+
+
+[Serializable]
+internal class StellarTransactionFailException : Exception
+{
+    private string _xdr;
+
+    public StellarTransactionFailException()
+    {
+    }
+
+    public StellarTransactionFailException(SubmitTransactionResponse response)
+    {
+        _xdr = response.ResultXdr;
+    }
+
+    public string GetResultInfo()
+    {
+        return _xdr;
     }
 }
 
