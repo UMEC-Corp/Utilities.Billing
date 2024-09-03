@@ -13,17 +13,34 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task<GetAssetReply> GetAsset(GetAssetCommand command);
     Task UpdateAsset(UpdateAssetCommand command);
     Task<CreateCustomerAccountReply> CreateCustomerAccount(CreateCustomerAccountCommand command);
+    Task<GetCustomerAccountReply> GetCustomerAccount(GetCustomerAccountCommand command);
+}
+
+public class GetCustomerAccountReply
+{
+    public Guid Id { get; set; }
+    public string Wallet { get; set; }
+    public Guid AssetId { get; set; }
+    public string AssetCode { get; set; }
+    public string MasterAccount { get; set; }
+}
+
+public class GetCustomerAccountCommand
+{
+    public string CustomerAccountId { get; set; }
 }
 
 public class CreateCustomerAccountReply
 {
+    public Guid AccountId { get; set; }
 }
 
 public class CreateCustomerAccountCommand
 {
     public string AssetId { get; set; }
-    public string DeviceSerial { get; set; }
+    public string ControllerSerial { get; set; }
     public bool CreateMuxed { get; set; }
+    public string MeterNumber { get; set; }
 }
 
 [GenerateSerializer]

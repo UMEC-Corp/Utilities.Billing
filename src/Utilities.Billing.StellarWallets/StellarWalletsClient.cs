@@ -75,7 +75,7 @@ public class StellarWalletsClient : IPaymentSystem
         await SendTran(server, transaction);
     }
 
-    public async Task<string> GetMasterAccount()
+    public async Task<string> GetMasterAccountAsync()
     {
         return KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed).AccountId;
     }

@@ -140,8 +140,8 @@ message CreateCustomerAccountRequest
 
 message CreateCustomerAccountResponse
 {
-  // Account identifiers in the system (uuid)
-  repeated string customerAccountIds = 1;
+  // Account identifier in the system (uuid)
+  string customerAccountId = 1;
 }
 
 message GetCustomerAccountRequest

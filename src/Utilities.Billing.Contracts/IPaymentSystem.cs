@@ -4,7 +4,7 @@ public interface IPaymentSystem
     Task AddAssetAsync(AddStellarAssetCommand command);
     Task AddPaymentAsync(AddPaymentCommand command);
     Task<string> CreateWalletAsync(CreateWalletCommand command);
-    Task<string> GetMasterAccount();
+    Task<string> GetMasterAccountAsync();
 }
 
 public class CreateWalletCommand

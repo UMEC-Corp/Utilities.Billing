@@ -65,10 +65,10 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var command = new UpdateAssetCommand
         {
             Id = request.AssetId,
-        }; 
+        };
         command.ModelCodes.Add(request.ModelCodes);
-        
-        await tenant.UpdateAsset(command);        
+
+        await tenant.UpdateAsset(command);
 
         return new UpdateAssetResponse { };
     }
@@ -79,13 +79,34 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var command = new CreateCustomerAccountCommand
         {
             AssetId = request.AssetId,
-            DeviceSerial = request.DeviceSerial,
+            ControllerSerial = request.ControllerSerial,
+            MeterNumber = request.MeterNumber,
             CreateMuxed = request.CreateMuxed,
         };
 
         var reply = await tenant.CreateCustomerAccount(command);
 
-        return new CreateCustomerAccountResponse { CustomerAccountIds };
+        return new CreateCustomerAccountResponse { CustomerAccountId = reply.AccountId.ToString() };
+    }
+
+    public override async Task<GetCustomerAccountResponse> GetCustomerAccount(GetCustomerAccountRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var command = new GetCustomerAccountCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+        };
+
+        var reply = await tenant.GetCustomerAccount(command);
+
+        return new GetCustomerAccountResponse
+        {
+            CustomerAccountId = reply.Id.ToString(),
+            CustomerAccount = reply.Wallet,
+            AssetId = reply.AssetId.ToString(),
+            Asset = reply.AssetCode,
+            MasterAccount = reply.MasterAccount,
+        };
     }
 }
 
