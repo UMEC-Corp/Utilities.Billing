@@ -72,5 +72,20 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
         return new UpdateAssetResponse { };
     }
+
+    public override async Task<CreateCustomerAccountResponse> CreateCustomerAccount(CreateCustomerAccountRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var command = new CreateCustomerAccountCommand
+        {
+            AssetId = request.AssetId,
+            DeviceSerial = request.DeviceSerial,
+            CreateMuxed = request.CreateMuxed,
+        };
+
+        var reply = await tenant.CreateCustomerAccount(command);
+
+        return new CreateCustomerAccountResponse { CustomerAccountIds };
+    }
 }
 

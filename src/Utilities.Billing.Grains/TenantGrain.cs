@@ -319,7 +319,33 @@ public class TenantGrain : Grain, ITenantGrain
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task<CreateCustomerAccountReply> CreateCustomerAccount(CreateCustomerAccountCommand command)
+    {
+        var wallet = await _paymentSystem.CreateWalletAsync(new CreateWalletCommand(
+                    TenantId: this.GetPrimaryKey(),
+                ));
 
+
+
+        await _paymentSystem.AddAsset(new AddStellarAssetCommand
+        {
+            AssetCode = "",
+            IssuerAccountId = "",
+            ReceiverAccountId = wallet
+        });
+
+        var entityEntry = await _dbContext.Accounts.AddAsync(new Account
+        {
+            TenantId = this.GetPrimaryKey(),
+            Name = command.Name,
+            Token = command.Token,
+            Wallet = wallet
+        });
+
+        await _dbContext.SaveChangesAsync();
+
+        return entityEntry.Entity.Id;
+    }
 }
 
 public static class Errors
