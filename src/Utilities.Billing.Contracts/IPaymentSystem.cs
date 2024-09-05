@@ -3,6 +3,7 @@ public interface IPaymentSystem
 {
     Task AddAssetAsync(AddStellarAssetCommand command);
     Task AddPaymentAsync(AddPaymentCommand command);
+    Task<string> CreateInvoiceXdr(CreateInvoiceXdrCommand command);
     Task<string> CreateWalletAsync(CreateWalletCommand command);
     Task<string> GetMasterAccountAsync();
 }
@@ -31,4 +32,13 @@ public class AddStellarAssetCommand
     public string AssetCode { get; set; }
     public string IssuerAccountId { get; set; }
     public string ReceiverAccountId { get; set; }
+}
+
+public class CreateInvoiceXdrCommand
+{
+    public string PayerAccountId { get; set; }
+    public string DeviceAccountId { get; set; }
+    public string AssetCode { get; set; }
+    public string Amount { get; set; }
+    public string AssetsIssuerAccountId { get; set; }
 }

@@ -7,6 +7,7 @@ using StellarDotnetSdk.Responses;
 using StellarDotnetSdk.Transactions;
 using StellarDotnetSdk.Xdr;
 using System.Runtime;
+using System.Runtime.Serialization;
 using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.StellarWallets;
@@ -33,7 +34,20 @@ public class StellarWalletsClient : IPaymentSystem
 
         var newKeyPair = KeyPair.Random();
 
-        var createAccountOperation = new CreateAccountOperation(newKeyPair, "1", masterKeyPair);
+        // Почему 3? 
+        //
+        // В Стелларе есть понятие минамального баланса. На данный момент он составляте 0.5 XLM
+        // Для того чтобы кошелек считался "живым", на нем должно быть два минимальных баланса, т.е. 1 XLM
+        // Кроме этого, на увеличение минимального баланса влияют Subentriy (0.5 XLM за каждый). В Subentriy входят: trustlines , offers, signers, data entries
+        // В нашем случае при создании кошелька добавляется Ассет (trustline) (+0.5 XLM), а также дополнительная подпись мастер-аккаутом (signer) (+0.5 XLM)
+        // Получаем минимальный баланс 2 XLM
+        // Добавляем еще 1 XLM на комиссиионные расходы при операциях, итого получаем 3 XLM.
+        // 
+        // Подробнее см. https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#base-reserves-and-subentries
+        // и https://developers.stellar.org/docs/learn/fundamentals/lumens#minimum-balance
+        var minimalBalance = "3";
+
+        var createAccountOperation = new CreateAccountOperation(newKeyPair, minimalBalance, masterKeyPair);
 
         var setOptionsOperation = new SetOptionsOperation(newKeyPair);
         setOptionsOperation.SetMasterKeyWeight(0);
@@ -75,6 +89,42 @@ public class StellarWalletsClient : IPaymentSystem
         await SendTran(server, transaction);
     }
 
+    public async Task<string> CreateInvoiceXdr(CreateInvoiceXdrCommand command)
+    {
+        UseNetwork();
+        var server = new Server(_options.CurrentValue.HorizonUrl);
+
+        var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
+        var masterAccount = await server.Accounts.Account(masterKeyPair.AccountId);
+
+        var payerKeyPair = KeyPair.FromAccountId(command.PayerAccountId);
+        var payerAccount = await server.Accounts.Account(payerKeyPair.AccountId);
+
+        var deviceKeyPair = KeyPair.FromAccountId(command.DeviceAccountId);
+        var deviceAccount = await server.Accounts.Account(deviceKeyPair.AccountId);
+
+        var asset = StellarDotnetSdk.Assets.Asset.CreateNonNativeAsset(command.AssetCode, command.AssetsIssuerAccountId);
+
+        var devicePaymentOperation = new PaymentOperation(masterKeyPair, asset, command.Amount, deviceAccount.KeyPair);
+        var payerPaymentOperation = new PaymentOperation(masterKeyPair, asset, command.Amount, payerAccount.KeyPair);
+
+        var transaction = new TransactionBuilder(masterAccount)
+                .AddOperation(devicePaymentOperation)
+                .AddOperation(payerPaymentOperation)
+                // A memo allows you to add your own metadata to a transaction. It's
+                // optional and does not affect how Stellar treats the transaction.
+                //.addMemo(Memo.text("Test Transaction"))
+                // Wait a maximum of three minutes for the transaction
+                //.setTimeout(180)
+                // Set the amount of lumens you're willing to pay per operation to submit your transaction
+                //.setBaseFee(Transaction.MIN_BASE_FEE)
+                .Build();
+
+        transaction.Sign(masterKeyPair);
+
+        return transaction.ToEnvelopeXdrBase64();
+    }
+
     public async Task<string> GetMasterAccountAsync()
     {
         return KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed).AccountId;
@@ -90,33 +140,31 @@ public class StellarWalletsClient : IPaymentSystem
         var response = await server.SubmitTransaction(transaction);
         if (!response.IsSuccess)
         {
-            throw new StellarTransactionFailException(response);
+            throw new StellarTransactionFailException($"Failed to execute transaction. See XDR for details: {response.ResultXdr}");
         }
 
     }
 
 }
 
-
-
-
 [Serializable]
 internal class StellarTransactionFailException : Exception
 {
-    private string _xdr;
 
     public StellarTransactionFailException()
     {
     }
 
-    public StellarTransactionFailException(SubmitTransactionResponse response)
+    public StellarTransactionFailException(string? message) : base(message)
     {
-        _xdr = response.ResultXdr;
     }
 
-    public string GetResultInfo()
+    public StellarTransactionFailException(string? message, Exception? innerException) : base(message, innerException)
     {
-        return _xdr;
+    }
+
+    protected StellarTransactionFailException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }
 

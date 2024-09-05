@@ -26,12 +26,12 @@ public class BillingDbContext : DbContext
 
         modelBuilder.Entity<AccountHolder>(e =>
         {
-            e.HasOne(x => x.Tenant).WithMany(x => x.AccountHolders).HasForeignKey(x => x.TenantId);
+            //e.HasOne(x => x.Tenant).WithMany(x => x.AccountHolders).HasForeignKey(x => x.TenantId);
         });
 
         modelBuilder.Entity<Account>(e =>
         {
-            e.HasOne(x => x.AccountType).WithMany(x => x.Accounts).HasForeignKey(x => x.AccountTypeId);
+            e.HasOne(x => x.Tenant).WithMany(x => x.Accounts).HasForeignKey(x => x.TenantId);
         });
 
         modelBuilder.Entity<AccountType>(e =>
@@ -39,7 +39,7 @@ public class BillingDbContext : DbContext
             e.Property(x => x.Name).IsRequired();
             e.Property(x => x.Token).IsRequired();
 
-            e.HasOne(x => x.Tenant).WithMany(x => x.AccountTypes).HasForeignKey(x => x.TenantId);
+            //e.HasOne(x => x.Tenant).WithMany(x => x.AccountTypes).HasForeignKey(x => x.TenantId);
         });
 
         modelBuilder.Entity<ExchangeRate>(e =>
@@ -47,10 +47,10 @@ public class BillingDbContext : DbContext
             e.HasOne(x => x.AccountType).WithMany(x => x.ExchangeRates).HasForeignKey(x => x.AccountTypeId);
         });
 
-        modelBuilder.Entity<Payment>(e =>
-        {
-            e.HasOne(x => x.Account).WithMany(x => x.Payments).HasForeignKey(x => x.AccountId);
-        });
+        //modelBuilder.Entity<Payment>(e =>
+        //{
+        //    e.HasOne(x => x.Account).WithMany(x => x.Payments).HasForeignKey(x => x.AccountId);
+        //});
 
         modelBuilder.Entity<Invoice>(e =>
         {

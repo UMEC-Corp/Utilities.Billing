@@ -1,11 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Orleans.Concurrency;
-using Orleans.Runtime;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
 using Utilities.Billing.Data.Entities;
-using Utilities.Billing.StellarWallets;
 
 namespace Utilities.Billing.Grains;
 public class TenantGrain : Grain, ITenantGrain
@@ -27,22 +23,7 @@ public class TenantGrain : Grain, ITenantGrain
 
     public async Task<long> AddAccountTypeAsync(AddAccountTypeCommand command)
     {
-        var wallet = await _paymentSystem.CreateWalletAsync(new CreateWalletCommand(
-            TenantId: this.GetPrimaryKey(),
-            Token: command.Token
-        ));
-
-        var entityEntry = await _dbContext.AccountTypes.AddAsync(new AccountType
-        {
-            TenantId = this.GetPrimaryKey(),
-            Name = command.Name,
-            Token = command.Token,
-            Wallet = wallet
-        });
-
-        await _dbContext.SaveChangesAsync();
-
-        return entityEntry.Entity.Id;
+        throw new NotImplementedException();
     }
 
     public Task DeleteAccountTypeAsync(DeleteAccountTypeCommand command)
@@ -65,6 +46,7 @@ public class TenantGrain : Grain, ITenantGrain
         throw new NotImplementedException();
     }
 
+    /*
     public async Task<AddPaymentsReply> AddPaymentsForInvoicesAsync(AddPaymentsForInvoicesCommand command)
     {
         CheckGrainState();
@@ -164,6 +146,7 @@ public class TenantGrain : Grain, ITenantGrain
 
         return reply;
     }
+    */
 
     private void CheckGrainState()
     {
@@ -196,6 +179,7 @@ public class TenantGrain : Grain, ITenantGrain
         return result;
     }
 
+    /*
     public async Task<AddInvoicesReply> AddInvoicesAsync(AddInvoicesCommand command)
     {
         var accountIds = command.Items.Select(x => x.AccountId).Distinct().ToList();
@@ -229,6 +213,17 @@ public class TenantGrain : Grain, ITenantGrain
 
         return reply;
     }
+    */
+    public Task<AddPaymentsReply> AddPaymentsForInvoicesAsync(AddPaymentsForInvoicesCommand command)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<AddInvoicesReply> AddInvoicesAsync(AddInvoicesCommand addInvoicesCommand)
+    {
+        throw new NotImplementedException();
+    }
+
 
     public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
     {
@@ -238,6 +233,13 @@ public class TenantGrain : Grain, ITenantGrain
         {
             throw Errors.EntityExists();
         }
+
+        await _paymentSystem.AddAssetAsync(new AddStellarAssetCommand
+        {
+            AssetCode = command.AssetCode,
+            IssuerAccountId = command.Issuer,
+            ReceiverAccountId = await _paymentSystem.GetMasterAccountAsync(),
+        });
 
         var asset = new Asset
         {
@@ -337,7 +339,7 @@ public class TenantGrain : Grain, ITenantGrain
 
         var entityEntry = await _dbContext.Accounts.AddAsync(new Account
         {
-            //TenantId = this.GetPrimaryKey(),
+            TenantId = this.GetPrimaryKey(),
             ControllerSerial = command.ControllerSerial,
             MeterNumber = command.MeterNumber,
             AssetId = asset.Id,
@@ -366,7 +368,42 @@ public class TenantGrain : Grain, ITenantGrain
             Wallet = account.Wallet,
             AssetId = account.AssetId,
             AssetCode = account.Asset.Code,
+            AssetIssuer = account.Asset.Issuer,
             MasterAccount = await _paymentSystem.GetMasterAccountAsync()
+        };
+    }
+
+    public async Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command)
+    {
+        if (!decimal.TryParse(command.Amount, out var amount) || amount == 0M)
+        {
+            throw Errors.InvalidValue(nameof(command.Amount), command.Amount);
+        }
+
+        var customerAccount = await GetCustomerAccount(new GetCustomerAccountCommand { CustomerAccountId = command.CustomerAccountId });
+
+        var xdr = await _paymentSystem.CreateInvoiceXdr(new CreateInvoiceXdrCommand
+        {
+            Amount = command.Amount,
+            AssetCode = customerAccount.AssetCode,
+            AssetsIssuerAccountId = customerAccount.AssetIssuer,
+            DeviceAccountId = customerAccount.Wallet,
+            PayerAccountId = command.PayerAccount
+        });
+
+        var invoice = new Invoice
+        {
+            AccountId = customerAccount.Id,
+            PayerWallet = command.PayerAccount,
+            Amount = amount,
+            Xdr = xdr
+        };
+        await _dbContext.Invoices.AddAsync(invoice);
+        await _dbContext.SaveChangesAsync();
+
+        return new CreateInvoiceReply
+        {
+            Xdr = xdr,
         };
     }
 
@@ -390,4 +427,10 @@ public class TenantGrain : Grain, ITenantGrain
         {
             throw new InvalidOperationException($"Entity {entityName}:{id} belongs another Tenant");
         }
+
+        internal static Exception InvalidValue(string field, string value)
+        {
+            throw new InvalidOperationException($"{field} has ivalid value: {value}");
+        }
     }
+}

@@ -14,32 +14,68 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task UpdateAsset(UpdateAssetCommand command);
     Task<CreateCustomerAccountReply> CreateCustomerAccount(CreateCustomerAccountCommand command);
     Task<GetCustomerAccountReply> GetCustomerAccount(GetCustomerAccountCommand command);
+    Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command);
 }
 
+[GenerateSerializer]
+public class CreateInvoiceReply
+{
+    [Id(0)]
+    public string Xdr { get; set; }
+}
+
+[GenerateSerializer]
+public class CreateInvoiceCommand
+{
+    [Id(0)]
+    public string CustomerAccountId { get; set; }
+    [Id(1)]
+    public string PayerAccount { get; set; }
+    [Id(2)]
+    public string Amount { get; set; }
+}
+
+[GenerateSerializer]
 public class GetCustomerAccountReply
 {
+    [Id(0)]
     public Guid Id { get; set; }
+    [Id(1)]
     public string Wallet { get; set; }
+    [Id(2)]
     public Guid AssetId { get; set; }
+    [Id(3)]
     public string AssetCode { get; set; }
+    [Id(4)]
+    public string AssetIssuer { get; set; }
+    [Id(5)]
     public string MasterAccount { get; set; }
 }
 
+[GenerateSerializer]
 public class GetCustomerAccountCommand
 {
+    [Id(0)]
     public string CustomerAccountId { get; set; }
 }
 
+[GenerateSerializer]
 public class CreateCustomerAccountReply
 {
+    [Id(0)]
     public Guid AccountId { get; set; }
 }
 
+[GenerateSerializer]
 public class CreateCustomerAccountCommand
 {
+    [Id(0)]
     public string AssetId { get; set; }
+    [Id(1)]
     public string ControllerSerial { get; set; }
+    [Id(2)]
     public bool CreateMuxed { get; set; }
+    [Id(3)]
     public string MeterNumber { get; set; }
 }
 

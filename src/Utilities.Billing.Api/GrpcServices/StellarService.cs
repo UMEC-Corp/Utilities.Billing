@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Orleans;
+using StellarDotnetSdk;
 using System.Linq;
 using Utilities.Billing.Api.Protos;
 using Utilities.Billing.Contracts;
@@ -105,7 +106,27 @@ public class StellarService : Protos.StellarService.StellarServiceBase
             CustomerAccount = reply.Wallet,
             AssetId = reply.AssetId.ToString(),
             Asset = reply.AssetCode,
+            Issuer = reply.AssetIssuer,
             MasterAccount = reply.MasterAccount,
+        };
+    }
+
+    public override async Task<CreateInvoiceResponse> CreateInvoice(CreateInvoiceRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetTenant(request.TenantId);
+
+        var command = new CreateInvoiceCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+            PayerAccount = request.PayerAccount,
+            Amount = request.Amount,
+        };
+
+        var reply = await tenant.CreateInvoice(command);
+
+        return new CreateInvoiceResponse
+        {
+            InvoiceXdr = reply.Xdr,
         };
     }
 }

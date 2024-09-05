@@ -4,8 +4,8 @@ namespace Utilities.Billing.Data.Entities;
 
 public class Payment : DbEntityWithLongKey
 {
-    public long AccountId { get; set; }
-    public virtual Account Account { get; set; }
+    //public long AccountId { get; set; }
+    //public virtual Account Account { get; set; }
     public decimal TokenAmount { get; set; }
     public decimal CurrencyAmount { get; set; }
     public DateTime? Date { get; set; }
