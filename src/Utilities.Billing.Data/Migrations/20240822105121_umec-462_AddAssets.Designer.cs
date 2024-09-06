@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Utilities.Billing.Data;
@@ -11,9 +12,11 @@ using Utilities.Billing.Data;
 namespace Utilities.Billing.Data.Migrations
 {
     [DbContext(typeof(BillingDbContext))]
-    partial class BillingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240822105121_umec-462_AddAssets")]
+    partial class umec462_AddAssets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -173,15 +176,8 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("issuer");
 
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tenant_id");
-
                     b.HasKey("Id")
                         .HasName("pk_assets");
-
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("ix_assets_tenant_id");
 
                     b.ToTable("assets", (string)null);
                 });
@@ -444,18 +440,6 @@ namespace Utilities.Billing.Data.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Utilities.Billing.Data.Entities.Asset", b =>
-                {
-                    b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
-                        .WithMany("Assets")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_assets_tenants_tenant_id");
-
-                    b.Navigation("Tenant");
-                });
-
             modelBuilder.Entity("Utilities.Billing.Data.Entities.EquipmentModel", b =>
                 {
                     b.HasOne("Utilities.Billing.Data.Entities.Asset", "Asset")
@@ -533,8 +517,6 @@ namespace Utilities.Billing.Data.Migrations
                     b.Navigation("AccountHolders");
 
                     b.Navigation("AccountTypes");
-
-                    b.Navigation("Assets");
                 });
 #pragma warning restore 612, 618
         }

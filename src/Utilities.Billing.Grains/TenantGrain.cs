@@ -1,7 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Orleans.Concurrency;
+using Orleans.Runtime;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
 using Utilities.Billing.Data.Entities;
+using Utilities.Billing.StellarWallets;
 
 namespace Utilities.Billing.Grains;
 public class TenantGrain : Grain, ITenantGrain
@@ -73,7 +77,7 @@ public class TenantGrain : Grain, ITenantGrain
 
         if (invoices.Count != invoiceIds.Count)
         {
-            throw Errors.NotFound(nameof(Invoice), invoiceIds.Except(invoices.Select(x=>x.Id)).ToList());
+            throw Errors.NotFound(nameof(Invoice), invoiceIds.Except(invoices.Select(x => x.Id)).ToList());
         }
 
         // Preload accounts to the db context
@@ -163,7 +167,7 @@ public class TenantGrain : Grain, ITenantGrain
 
     private void CheckGrainState()
     {
-        if(_tenantState is null)
+        if (_tenantState is null)
         {
             throw Errors.GrainIsNotInitialized(nameof(TenantGrain), this.GetPrimaryKey());
         }
@@ -225,6 +229,97 @@ public class TenantGrain : Grain, ITenantGrain
 
         return reply;
     }
+
+    public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
+    {
+        var tenantId = this.GetPrimaryKey();
+        var existsAsset = _dbContext.Assets.Where(x => x.Code == command.AssetCode && x.Issuer == command.Issuer && x.TenantId == tenantId);
+        if (await existsAsset.AnyAsync())
+        {
+            throw Errors.EntityExists();
+        }
+
+        var asset = new Asset
+        {
+            Code = command.AssetCode,
+            Issuer = command.Issuer,
+            TenantId = tenantId,
+        };
+        await _dbContext.Assets.AddAsync(asset);
+
+        await _dbContext.SaveChangesAsync();
+
+        foreach (var code in command.ModelCodes)
+        {
+            var model = new EquipmentModel
+            {
+                Code = code,
+                Asset = asset
+            };
+            await _dbContext.EquipmentModels.AddAsync(model);
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return new AddAssetReply { Id = asset.Id };
+    }
+
+    public async Task<GetAssetReply> GetAsset(GetAssetCommand command)
+    {
+        var asset = await _dbContext.Assets.FindAsync(new Guid(command.Id));
+        if (asset == null)
+        {
+            throw Errors.NotFound(nameof(Asset), new List<string> { command.Id });
+        }
+        if (asset.TenantId != this.GetPrimaryKey())
+        {
+            throw Errors.BelongsAnotherTenant(nameof(Asset), command.Id);
+        }
+
+        var response = new GetAssetReply
+        {
+            Id = asset.Id,
+            Code = asset.Code,
+            IssuerAccount = asset.Issuer,
+            MasterAccount = await _paymentSystem.GetMasterAccount(),
+        };
+        //response.ModelCodes.Add(asset.EquipmentModels.Select(x => x.Code));
+        response.ModelCodes.Add(await _dbContext.EquipmentModels.Where(x => x.AssetId == asset.Id).Select(x => x.Code).ToListAsync());
+
+        return response;
+    }
+
+    public async Task UpdateAsset(UpdateAssetCommand command)
+    {
+        var asset = await _dbContext.Assets.FindAsync(new Guid(command.Id));
+        if (asset == null)
+        {
+            throw Errors.NotFound(nameof(Asset), new List<string> { command.Id });
+        }
+        if (asset.TenantId != this.GetPrimaryKey())
+        {
+            throw Errors.BelongsAnotherTenant(nameof(Asset), command.Id);
+        }
+
+        var equipsQuery = _dbContext.EquipmentModels.Where(x => x.AssetId == asset.Id);
+        var existsModels = await equipsQuery.Select(x => x.Code).ToListAsync();
+
+        var removingModels = await equipsQuery.Where(x => !command.ModelCodes.Contains(x.Code)).ToListAsync();
+        foreach (var model in removingModels)
+        {
+            _dbContext.EquipmentModels.Remove(model);
+        }
+
+        var newModels = command.ModelCodes.Except(existsModels).ToList();
+        foreach (var code in newModels)
+        {
+            await _dbContext.EquipmentModels.AddAsync(new EquipmentModel { Code = code, Asset = asset });
+        }
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+
 }
 
 public static class Errors
@@ -232,6 +327,19 @@ public static class Errors
     public static Exception NotFound(string entityName, ICollection<long> ids) =>
         throw new InvalidOperationException($"Entity not found {entityName}:{string.Join(",", ids)}");
 
+    public static Exception NotFound(string entityName, ICollection<string> ids) =>
+        throw new InvalidOperationException($"Entity not found {entityName}:{string.Join(",", ids)}");
+
     public static Exception GrainIsNotInitialized(string grainName, Guid id) =>
         throw new InvalidOperationException($"Grain uninitialized {grainName}:{id}");
+
+    public static Exception EntityExists()
+    {
+        throw new InvalidOperationException($"Entity already exists");
+    }
+
+    public static Exception BelongsAnotherTenant(string entityName, string id)
+    {
+        throw new InvalidOperationException($"Entity {entityName}:{id} belongs another Tenant");
+    }
 }
