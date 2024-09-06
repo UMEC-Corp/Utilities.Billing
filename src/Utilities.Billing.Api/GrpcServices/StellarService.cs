@@ -76,7 +76,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<CreateCustomerAccountResponse> CreateCustomerAccount(CreateCustomerAccountRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var command = new CreateCustomerAccountCommand
         {
             AssetId = request.AssetId,
@@ -92,7 +92,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<GetCustomerAccountResponse> GetCustomerAccount(GetCustomerAccountRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var command = new GetCustomerAccountCommand
         {
             CustomerAccountId = request.CustomerAccountId,
@@ -113,7 +113,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<CreateInvoiceResponse> CreateInvoice(CreateInvoiceRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
 
         var command = new CreateInvoiceCommand
         {
@@ -133,7 +133,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<ListInvoicesResponse> ListInvoices(ListInvoicesRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
 
         var command = new ListInvoicesCommand
         {
