@@ -24,20 +24,27 @@ namespace Utilities.Billing.Data.Migrations
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Account", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("AccountHolderId")
+                    b.Property<long?>("AccountHolderId")
                         .HasColumnType("bigint")
                         .HasColumnName("account_holder_id");
 
-                    b.Property<long>("AccountTypeId")
+                    b.Property<long?>("AccountTypeId")
                         .HasColumnType("bigint")
                         .HasColumnName("account_type_id");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("asset_id");
+
+                    b.Property<string>("ControllerSerial")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("controller_serial");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone")
@@ -46,6 +53,15 @@ namespace Utilities.Billing.Data.Migrations
                     b.Property<DateTime?>("Deleted")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted");
+
+                    b.Property<string>("MeterNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("meter_number");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
 
                     b.Property<string>("Wallet")
                         .IsRequired()
@@ -60,6 +76,12 @@ namespace Utilities.Billing.Data.Migrations
 
                     b.HasIndex("AccountTypeId")
                         .HasDatabaseName("ix_accounts_account_type_id");
+
+                    b.HasIndex("AssetId")
+                        .HasDatabaseName("ix_accounts_asset_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_accounts_tenant_id");
 
                     b.ToTable("accounts", (string)null);
                 });
@@ -272,33 +294,31 @@ namespace Utilities.Billing.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AccountId")
-                        .HasColumnType("bigint")
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
                         .HasColumnName("account_id");
 
-                    b.Property<decimal>("AmountPayed")
+                    b.Property<decimal>("Amount")
                         .HasColumnType("numeric")
-                        .HasColumnName("amount_payed");
-
-                    b.Property<decimal>("AmountTotal")
-                        .HasColumnType("numeric")
-                        .HasColumnName("amount_total");
+                        .HasColumnName("amount");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<DateTime?>("Date")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date");
-
-                    b.Property<DateTime?>("DateTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_to");
-
                     b.Property<DateTime?>("Deleted")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted");
+
+                    b.Property<string>("PayerWallet")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payer_wallet");
+
+                    b.Property<string>("Xdr")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("xdr");
 
                     b.HasKey("Id")
                         .HasName("pk_invoices");
@@ -317,10 +337,6 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("AccountId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("account_id");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone")
@@ -356,9 +372,6 @@ namespace Utilities.Billing.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_payments");
-
-                    b.HasIndex("AccountId")
-                        .HasDatabaseName("ix_payments_account_id");
 
                     b.ToTable("payments", (string)null);
                 });
@@ -401,29 +414,39 @@ namespace Utilities.Billing.Data.Migrations
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Account", b =>
                 {
-                    b.HasOne("Utilities.Billing.Data.Entities.AccountHolder", "AccountHolder")
+                    b.HasOne("Utilities.Billing.Data.Entities.AccountHolder", null)
                         .WithMany("Accounts")
                         .HasForeignKey("AccountHolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_accounts_account_holder_account_holder_id");
 
-                    b.HasOne("Utilities.Billing.Data.Entities.AccountType", "AccountType")
+                    b.HasOne("Utilities.Billing.Data.Entities.AccountType", null)
                         .WithMany("Accounts")
                         .HasForeignKey("AccountTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_accounts_account_types_account_type_id");
 
-                    b.Navigation("AccountHolder");
+                    b.HasOne("Utilities.Billing.Data.Entities.Asset", "Asset")
+                        .WithMany()
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_accounts_assets_asset_id");
 
-                    b.Navigation("AccountType");
+                    b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
+                        .WithMany("Accounts")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_accounts_tenants_tenant_id");
+
+                    b.Navigation("Asset");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountHolder", b =>
                 {
                     b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
-                        .WithMany("AccountHolders")
+                        .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -435,7 +458,7 @@ namespace Utilities.Billing.Data.Migrations
             modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountType", b =>
                 {
                     b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
-                        .WithMany("AccountTypes")
+                        .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -492,23 +515,9 @@ namespace Utilities.Billing.Data.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Utilities.Billing.Data.Entities.Payment", b =>
-                {
-                    b.HasOne("Utilities.Billing.Data.Entities.Account", "Account")
-                        .WithMany("Payments")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_payments_accounts_account_id");
-
-                    b.Navigation("Account");
-                });
-
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Account", b =>
                 {
                     b.Navigation("Invoices");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountHolder", b =>
@@ -530,9 +539,7 @@ namespace Utilities.Billing.Data.Migrations
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Tenant", b =>
                 {
-                    b.Navigation("AccountHolders");
-
-                    b.Navigation("AccountTypes");
+                    b.Navigation("Accounts");
 
                     b.Navigation("Assets");
                 });

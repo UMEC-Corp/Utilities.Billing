@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Orleans;
+using StellarDotnetSdk;
 using System.Linq;
 using Utilities.Billing.Api.Protos;
 using Utilities.Billing.Contracts;
@@ -65,12 +66,97 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var command = new UpdateAssetCommand
         {
             Id = request.AssetId,
-        }; 
+        };
         command.ModelCodes.Add(request.ModelCodes);
-        
-        await tenant.UpdateAsset(command);        
+
+        await tenant.UpdateAsset(command);
 
         return new UpdateAssetResponse { };
+    }
+
+    public override async Task<CreateCustomerAccountResponse> CreateCustomerAccount(CreateCustomerAccountRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+        var command = new CreateCustomerAccountCommand
+        {
+            AssetId = request.AssetId,
+            ControllerSerial = request.ControllerSerial,
+            MeterNumber = request.MeterNumber,
+            CreateMuxed = request.CreateMuxed,
+        };
+
+        var reply = await tenant.CreateCustomerAccount(command);
+
+        return new CreateCustomerAccountResponse { CustomerAccountId = reply.AccountId.ToString() };
+    }
+
+    public override async Task<GetCustomerAccountResponse> GetCustomerAccount(GetCustomerAccountRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+        var command = new GetCustomerAccountCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+        };
+
+        var reply = await tenant.GetCustomerAccount(command);
+
+        return new GetCustomerAccountResponse
+        {
+            CustomerAccountId = reply.Id.ToString(),
+            CustomerAccount = reply.Wallet,
+            AssetId = reply.AssetId.ToString(),
+            Asset = reply.AssetCode,
+            Issuer = reply.AssetIssuer,
+            MasterAccount = reply.MasterAccount,
+        };
+    }
+
+    public override async Task<CreateInvoiceResponse> CreateInvoice(CreateInvoiceRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+
+        var command = new CreateInvoiceCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+            PayerAccount = request.PayerAccount,
+            Amount = request.Amount,
+        };
+
+        var reply = await tenant.CreateInvoice(command);
+
+        return new CreateInvoiceResponse
+        {
+            InvoiceXdr = reply.Xdr,
+        };
+    }
+
+
+    public override async Task<ListInvoicesResponse> ListInvoices(ListInvoicesRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+
+        var command = new ListInvoicesCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+            PeriodFrom = request.PeriodFrom,
+            PeriodTo = request.PeriodTo,
+        };
+
+        var reply = await tenant.ListInvoices(command);
+
+        var response = new ListInvoicesResponse();
+        foreach ( var item in reply.Items )
+        {
+            response.Items.Add(new ListInvoicesResponse.Types.InvoicesListItem
+            {
+                TransactionId = item.TransactionId,
+                Amount = item.Amount,
+                Xdr = item.Xdr,
+                Processed = item.Processed,
+            });
+        }
+
+        return response;
     }
 }
 

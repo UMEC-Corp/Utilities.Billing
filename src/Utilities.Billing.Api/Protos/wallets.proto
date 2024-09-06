@@ -127,19 +127,21 @@ message CreateCustomerAccountRequest
   string tenantId = 1;
   // Asset ID in the system (uuid)
   string assetId = 2;
-  // Permanent identifier of the metering device
-  string deviceSerial = 3;
+  // Permanent identifier of the controller
+  string controllerSerial = 3;
+  // Number of metering device
+  string meterNumber = 4;
   // Create a separate account (G-) for the meter or a multiplexed account (M-). In the case of G accounts, the movement of tokens will be clearly visible in the explorer, 
   // balances will be controlled by the blockchain, negative balances will not be possible, transactions will be more expensive. In the case of M accounts in the operation explorer 
   // by consumption will be visible in a general list for all metering devices, negative balances will be possible, the balance will not be controlled by the blockchain. 
   // In any case, the created account will be managed only through the system account associated with the asset. 
-  bool createMuxed = 4;
+  bool createMuxed = 5;
 }
 
 message CreateCustomerAccountResponse
 {
-  // Account identifiers in the system (uuid)
-  repeated string customerAccountIds = 1;
+  // Account identifier in the system (uuid)
+  string customerAccountId = 1;
 }
 
 message GetCustomerAccountRequest
@@ -190,7 +192,7 @@ message ListInvoicesRequest
   // Start of period, unix timestamp, seconds
   uint64 periodFrom = 3;
   // End of period, unix timestamp, seconds
-  uint32 periodTo = 4;
+  uint64 periodTo = 4;
 }
 
 message ListInvoicesResponse
@@ -205,5 +207,7 @@ message ListInvoicesResponse
     string amount = 2;
     // Fullfilled
     bool processed = 3;
+    // Transaction Envelope XDR
+    string xdr = 4;
   }
 }

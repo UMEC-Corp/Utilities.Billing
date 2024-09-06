@@ -12,35 +12,42 @@ using Utilities.Billing.Data;
 namespace Utilities.Billing.Data.Migrations
 {
     [DbContext(typeof(BillingDbContext))]
-    [Migration("20230430090150_AddsDateToToInvoices")]
-    partial class AddsDateToToInvoices
+    [Migration("20240905091454_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Account", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("AccountHolderId")
+                    b.Property<long?>("AccountHolderId")
                         .HasColumnType("bigint")
                         .HasColumnName("account_holder_id");
 
-                    b.Property<long>("AccountTypeId")
+                    b.Property<long?>("AccountTypeId")
                         .HasColumnType("bigint")
                         .HasColumnName("account_type_id");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("asset_id");
+
+                    b.Property<string>("ControllerSerial")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("controller_serial");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone")
@@ -50,6 +57,20 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted");
 
+                    b.Property<string>("MeterNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("meter_number");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("wallet");
+
                     b.HasKey("Id")
                         .HasName("pk_accounts");
 
@@ -58,6 +79,12 @@ namespace Utilities.Billing.Data.Migrations
 
                     b.HasIndex("AccountTypeId")
                         .HasDatabaseName("ix_accounts_account_type_id");
+
+                    b.HasIndex("AssetId")
+                        .HasDatabaseName("ix_accounts_asset_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_accounts_tenant_id");
 
                     b.ToTable("accounts", (string)null);
                 });
@@ -132,6 +159,11 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("token");
 
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("wallet");
+
                     b.HasKey("Id")
                         .HasName("pk_account_types");
 
@@ -139,6 +171,121 @@ namespace Utilities.Billing.Data.Migrations
                         .HasDatabaseName("ix_account_types_tenant_id");
 
                     b.ToTable("account_types", (string)null);
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.Asset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created");
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted");
+
+                    b.Property<string>("Issuer")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("issuer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_assets");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_assets_tenant_id");
+
+                    b.ToTable("assets", (string)null);
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.EquipmentModel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("asset_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created");
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted");
+
+                    b.HasKey("Id")
+                        .HasName("pk_equipment_models");
+
+                    b.HasIndex("AssetId")
+                        .HasDatabaseName("ix_equipment_models_asset_id");
+
+                    b.ToTable("equipment_models", (string)null);
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.ExchangeRate", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AccountTypeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("account_type_id");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created");
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted");
+
+                    b.Property<DateTime>("Effective")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective");
+
+                    b.Property<DateTime?>("Expires")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires");
+
+                    b.Property<decimal>("SellPrice")
+                        .HasColumnType("numeric")
+                        .HasColumnName("sell_price");
+
+                    b.HasKey("Id")
+                        .HasName("pk_exchange_rates");
+
+                    b.HasIndex("AccountTypeId")
+                        .HasDatabaseName("ix_exchange_rates_account_type_id");
+
+                    b.ToTable("exchange_rates", (string)null);
                 });
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Invoice", b =>
@@ -150,33 +297,31 @@ namespace Utilities.Billing.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AccountId")
-                        .HasColumnType("bigint")
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
                         .HasColumnName("account_id");
 
-                    b.Property<decimal>("AmountPayed")
+                    b.Property<decimal>("Amount")
                         .HasColumnType("numeric")
-                        .HasColumnName("amount_payed");
-
-                    b.Property<decimal>("AmountTotal")
-                        .HasColumnType("numeric")
-                        .HasColumnName("amount_total");
+                        .HasColumnName("amount");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<DateTime?>("Date")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date");
-
-                    b.Property<DateTime?>("DateTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_to");
-
                     b.Property<DateTime?>("Deleted")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted");
+
+                    b.Property<string>("PayerWallet")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payer_wallet");
+
+                    b.Property<string>("Xdr")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("xdr");
 
                     b.HasKey("Id")
                         .HasName("pk_invoices");
@@ -196,21 +341,21 @@ namespace Utilities.Billing.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AccountId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("account_id");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric")
-                        .HasColumnName("amount");
-
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
+                    b.Property<decimal>("CurrencyAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("currency_amount");
+
                     b.Property<DateTime?>("Date")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date");
+
+                    b.Property<DateTime?>("DateTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_to");
 
                     b.Property<DateTime?>("Deleted")
                         .HasColumnType("timestamp with time zone")
@@ -220,15 +365,16 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<decimal>("TokenAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("token_amount");
+
                     b.Property<string>("Transaction")
                         .HasColumnType("text")
                         .HasColumnName("transaction");
 
                     b.HasKey("Id")
                         .HasName("pk_payments");
-
-                    b.HasIndex("AccountId")
-                        .HasDatabaseName("ix_payments_account_id");
 
                     b.ToTable("payments", (string)null);
                 });
@@ -258,6 +404,11 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("wallet");
+
                     b.HasKey("Id")
                         .HasName("pk_tenants");
 
@@ -266,29 +417,39 @@ namespace Utilities.Billing.Data.Migrations
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Account", b =>
                 {
-                    b.HasOne("Utilities.Billing.Data.Entities.AccountHolder", "AccountHolder")
+                    b.HasOne("Utilities.Billing.Data.Entities.AccountHolder", null)
                         .WithMany("Accounts")
                         .HasForeignKey("AccountHolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_accounts_account_holder_account_holder_id");
 
-                    b.HasOne("Utilities.Billing.Data.Entities.AccountType", "AccountType")
-                        .WithMany()
+                    b.HasOne("Utilities.Billing.Data.Entities.AccountType", null)
+                        .WithMany("Accounts")
                         .HasForeignKey("AccountTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_accounts_account_types_account_type_id");
 
-                    b.Navigation("AccountHolder");
+                    b.HasOne("Utilities.Billing.Data.Entities.Asset", "Asset")
+                        .WithMany()
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_accounts_assets_asset_id");
 
-                    b.Navigation("AccountType");
+                    b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
+                        .WithMany("Accounts")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_accounts_tenants_tenant_id");
+
+                    b.Navigation("Asset");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountHolder", b =>
                 {
                     b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
-                        .WithMany("AccountHolders")
+                        .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -300,13 +461,49 @@ namespace Utilities.Billing.Data.Migrations
             modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountType", b =>
                 {
                     b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
-                        .WithMany("AccountTypes")
+                        .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_account_types_tenants_tenant_id");
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.Asset", b =>
+                {
+                    b.HasOne("Utilities.Billing.Data.Entities.Tenant", "Tenant")
+                        .WithMany("Assets")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_assets_tenants_tenant_id");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.EquipmentModel", b =>
+                {
+                    b.HasOne("Utilities.Billing.Data.Entities.Asset", "Asset")
+                        .WithMany("EquipmentModels")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_equipment_models_assets_asset_id");
+
+                    b.Navigation("Asset");
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.ExchangeRate", b =>
+                {
+                    b.HasOne("Utilities.Billing.Data.Entities.AccountType", "AccountType")
+                        .WithMany("ExchangeRates")
+                        .HasForeignKey("AccountTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_exchange_rates_account_types_account_type_id");
+
+                    b.Navigation("AccountType");
                 });
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Invoice", b =>
@@ -321,23 +518,9 @@ namespace Utilities.Billing.Data.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Utilities.Billing.Data.Entities.Payment", b =>
-                {
-                    b.HasOne("Utilities.Billing.Data.Entities.Account", "Account")
-                        .WithMany("Payments")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_payments_accounts_account_id");
-
-                    b.Navigation("Account");
-                });
-
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Account", b =>
                 {
                     b.Navigation("Invoices");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountHolder", b =>
@@ -345,11 +528,23 @@ namespace Utilities.Billing.Data.Migrations
                     b.Navigation("Accounts");
                 });
 
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.AccountType", b =>
+                {
+                    b.Navigation("Accounts");
+
+                    b.Navigation("ExchangeRates");
+                });
+
+            modelBuilder.Entity("Utilities.Billing.Data.Entities.Asset", b =>
+                {
+                    b.Navigation("EquipmentModels");
+                });
+
             modelBuilder.Entity("Utilities.Billing.Data.Entities.Tenant", b =>
                 {
-                    b.Navigation("AccountHolders");
+                    b.Navigation("Accounts");
 
-                    b.Navigation("AccountTypes");
+                    b.Navigation("Assets");
                 });
 #pragma warning restore 612, 618
         }
