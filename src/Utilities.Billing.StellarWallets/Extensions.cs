@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.StellarWallets;
@@ -9,6 +10,8 @@ public static class Extensions
     {
         var section = configuration.GetSection(sectionName);
         services.Configure<StellarWalletsSettings>(section);
+        services.AddSingleton<IValidateOptions<StellarWalletsSettings>, StellarWalletsSettingsValidator>();
+        services.AddOptionsWithValidateOnStart<StellarWalletsSettings>();
 
         return services.AddSingleton<IPaymentSystem, StellarWalletsClient>();
     }
