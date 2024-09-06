@@ -15,6 +15,38 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task<CreateCustomerAccountReply> CreateCustomerAccount(CreateCustomerAccountCommand command);
     Task<GetCustomerAccountReply> GetCustomerAccount(GetCustomerAccountCommand command);
     Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command);
+    Task<ListInvoicesReply> ListInvoices(ListInvoicesCommand command);
+}
+
+[GenerateSerializer]
+public class ListInvoicesReply
+{
+    [Id(0)]
+    public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
+
+    [GenerateSerializer]
+    public class InvoiceItem
+    {
+        [Id(0)]
+        public string TransactionId { get; set; }
+        [Id(1)]
+        public string Amount { get; set; }
+        [Id(2)]
+        public bool Processed { get; set; }
+        [Id(3)]
+        public string Xdr { get; set; }
+    }
+}
+
+[GenerateSerializer]
+public class ListInvoicesCommand
+{
+    [Id(0)]
+    public string CustomerAccountId { get; set; }
+    [Id(1)]
+    public ulong PeriodFrom { get; set; }
+    [Id(2)]
+    public ulong PeriodTo { get; set; }
 }
 
 [GenerateSerializer]

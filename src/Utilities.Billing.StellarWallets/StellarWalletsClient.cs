@@ -6,6 +6,7 @@ using StellarDotnetSdk.Operations;
 using StellarDotnetSdk.Responses;
 using StellarDotnetSdk.Transactions;
 using StellarDotnetSdk.Xdr;
+using System.Globalization;
 using System.Runtime;
 using System.Runtime.Serialization;
 using Utilities.Billing.Contracts;
@@ -38,8 +39,8 @@ public class StellarWalletsClient : IPaymentSystem
         //
         // В Стелларе есть понятие минамального баланса. На данный момент он составляте 0.5 XLM
         // Для того чтобы кошелек считался "живым", на нем должно быть два минимальных баланса, т.е. 1 XLM
-        // Кроме этого, на увеличение минимального баланса влияют Subentriy (0.5 XLM за каждый). В Subentriy входят: trustlines , offers, signers, data entries
-        // В нашем случае при создании кошелька добавляется Ассет (trustline) (+0.5 XLM), а также дополнительная подпись мастер-аккаутом (signer) (+0.5 XLM)
+        // Кроме этого, на увеличение минимального баланса влияют Subentry (0.5 XLM за каждый). В Subentry входят: trustlines , offers, signers, data entries
+        // В нашем случае при создании кошелька добавляется Ассет (trustline) (+0.5 XLM), а также дополнительная подпись мастер-аккаунтом (signer) (+0.5 XLM)
         // Получаем минимальный баланс 2 XLM
         // Добавляем еще 1 XLM на комиссиионные расходы при операциях, итого получаем 3 XLM.
         // 
@@ -105,8 +106,9 @@ public class StellarWalletsClient : IPaymentSystem
 
         var asset = StellarDotnetSdk.Assets.Asset.CreateNonNativeAsset(command.AssetCode, command.AssetsIssuerAccountId);
 
-        var devicePaymentOperation = new PaymentOperation(masterKeyPair, asset, command.Amount, deviceAccount.KeyPair);
-        var payerPaymentOperation = new PaymentOperation(masterKeyPair, asset, command.Amount, payerAccount.KeyPair);
+        var amount = command.Amount.ToString(CultureInfo.InvariantCulture);
+        var devicePaymentOperation = new PaymentOperation(masterKeyPair, asset, amount, deviceAccount.KeyPair);
+        var payerPaymentOperation = new PaymentOperation(masterKeyPair, asset, amount, payerAccount.KeyPair);
 
         var transaction = new TransactionBuilder(masterAccount)
                 .AddOperation(devicePaymentOperation)

@@ -192,7 +192,7 @@ message ListInvoicesRequest
   // Start of period, unix timestamp, seconds
   uint64 periodFrom = 3;
   // End of period, unix timestamp, seconds
-  uint32 periodTo = 4;
+  uint64 periodTo = 4;
 }
 
 message ListInvoicesResponse
@@ -207,5 +207,7 @@ message ListInvoicesResponse
     string amount = 2;
     // Fullfilled
     bool processed = 3;
+    // Transaction Envelope XDR
+    string xdr = 4;
   }
 }

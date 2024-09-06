@@ -129,5 +129,34 @@ public class StellarService : Protos.StellarService.StellarServiceBase
             InvoiceXdr = reply.Xdr,
         };
     }
+
+
+    public override async Task<ListInvoicesResponse> ListInvoices(ListInvoicesRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetTenant(request.TenantId);
+
+        var command = new ListInvoicesCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+            PeriodFrom = request.PeriodFrom,
+            PeriodTo = request.PeriodTo,
+        };
+
+        var reply = await tenant.ListInvoices(command);
+
+        var response = new ListInvoicesResponse();
+        foreach ( var item in reply.Items )
+        {
+            response.Items.Add(new ListInvoicesResponse.Types.InvoicesListItem
+            {
+                TransactionId = item.TransactionId,
+                Amount = item.Amount,
+                Xdr = item.Xdr,
+                Processed = item.Processed,
+            });
+        }
+
+        return response;
+    }
 }
 

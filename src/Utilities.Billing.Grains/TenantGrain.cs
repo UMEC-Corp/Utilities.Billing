@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StellarDotnetSdk;
+using System.Globalization;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
 using Utilities.Billing.Data.Entities;
@@ -375,7 +377,7 @@ public class TenantGrain : Grain, ITenantGrain
 
     public async Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command)
     {
-        if (!decimal.TryParse(command.Amount, out var amount) || amount == 0M)
+        if (!decimal.TryParse(command.Amount, CultureInfo.InvariantCulture, out var amount) || amount == 0M)
         {
             throw Errors.InvalidValue(nameof(command.Amount), command.Amount);
         }
@@ -384,7 +386,7 @@ public class TenantGrain : Grain, ITenantGrain
 
         var xdr = await _paymentSystem.CreateInvoiceXdr(new CreateInvoiceXdrCommand
         {
-            Amount = command.Amount,
+            Amount = amount,
             AssetCode = customerAccount.AssetCode,
             AssetsIssuerAccountId = customerAccount.AssetIssuer,
             DeviceAccountId = customerAccount.Wallet,
@@ -405,6 +407,37 @@ public class TenantGrain : Grain, ITenantGrain
         {
             Xdr = xdr,
         };
+    }
+
+    public async Task<ListInvoicesReply> ListInvoices(ListInvoicesCommand command)
+    {
+        var start = DateTimeOffset.FromUnixTimeSeconds((long)command.PeriodFrom);
+        var stop = DateTimeOffset.FromUnixTimeSeconds((long)command.PeriodTo);
+        var tenantId = this.GetPrimaryKey();
+
+        var invoices = await _dbContext.Invoices
+            .Where(x => x.AccountId == new Guid(command.CustomerAccountId) && x.Account.TenantId == tenantId)
+            .Where(x=> x.Created >= start && x.Created <= stop)
+            .Select(x => new { 
+                Id = x.Id,
+                Amount = x.Amount,
+                Xdr = x.Xdr,
+            })
+            .ToListAsync();
+
+        var reply = new ListInvoicesReply();
+        foreach(var invoice in invoices)
+        {
+            reply.Items.Add(new ListInvoicesReply.InvoiceItem
+            {
+                TransactionId = invoice.Id.ToString(),
+                Amount = invoice.Amount.ToString(CultureInfo.InvariantCulture),
+                Xdr = invoice.Xdr,  
+                Processed = true, // ??
+            });
+        }
+
+        return reply;
     }
 
     public static class Errors
