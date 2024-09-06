@@ -8,7 +8,6 @@ using StellarDotnetSdk.Transactions;
 using StellarDotnetSdk.Xdr;
 using System.Globalization;
 using System.Runtime;
-using System.Runtime.Serialization;
 using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.StellarWallets;
@@ -147,34 +146,4 @@ public class StellarWalletsClient : IPaymentSystem
 
     }
 
-}
-
-[Serializable]
-internal class StellarTransactionFailException : Exception
-{
-
-    public StellarTransactionFailException()
-    {
-    }
-
-    public StellarTransactionFailException(string? message) : base(message)
-    {
-    }
-
-    public StellarTransactionFailException(string? message, Exception? innerException) : base(message, innerException)
-    {
-    }
-
-    protected StellarTransactionFailException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
-}
-
-
-
-public class StellarWalletsSettings
-{
-    public static string SectionName = nameof(StellarWalletsSettings);
-    public string HorizonUrl { get; set; }
-    public string SecretSeed { get; set; }
 }
