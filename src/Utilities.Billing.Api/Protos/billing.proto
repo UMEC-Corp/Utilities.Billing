@@ -34,10 +34,12 @@ service BillingService
 /* Invoice */
 
 message AddInvoiceRequest {
+  string tenantId = 1;
   uint64 accountId = 2;
   double amount = 3;
   optional uint64 date = 4;
   optional uint64 dateTo = 6;
+
 }
 
 message AddInvoiceResponse {
@@ -45,10 +47,11 @@ message AddInvoiceResponse {
 }
 
 message UpdateInvoiceRequest {
-  uint64 id = 1;
-  optional uint64 accountId = 2;
-  optional double amount = 3;
-  optional uint64 date = 4;
+  string tenantId = 1;
+  uint64 id = 2;
+  optional uint64 accountId = 3;
+  optional double amount = 4;
+  optional uint64 date = 5;
   optional uint64 dateTo = 6;
 }
 
@@ -56,14 +59,16 @@ message UpdateInvoiceResponse {
 }
 
 message DeleteInvoiceRequest{
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message DeleteInvoiceResponse {
 }
 
 message GetInvoiceRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message GetInvoiceResponse {
@@ -71,8 +76,9 @@ message GetInvoiceResponse {
 }
 
 message GetInvoicesRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
+  string tenantId = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
 }
 
 message GetInvoicesResponse {
@@ -83,6 +89,7 @@ message GetInvoicesResponse {
 /* Payment */
 
 message AddPaymentRequest {
+  string tenantId = 1;
   uint64 accountId = 2;
   double amount = 3;
   optional uint64 date = 4;
@@ -94,24 +101,27 @@ message AddPaymentResponse {
 
 
 message UpdatePaymentRequest {
-  int64 id = 1;
-  uint64 accountId = 2;
-  double amount = 3;
-  optional uint64 date = 4;
+  string tenantId = 1;
+  int64 id = 2;
+  uint64 accountId = 3;
+  double amount = 4;
+  optional uint64 date = 5;
 }
 
 message UpdatePaymentResponse {
 }
 
 message DeletePaymentRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message DeletePaymentResponse {
 }
 
 message GetPaymentRequest {
-  uint64 id = 1;
+  string tenantId = 1;
+  uint64 id = 2;
 }
 
 message GetPaymentResponse {
@@ -119,9 +129,10 @@ message GetPaymentResponse {
 }
 
 message GetPaymentsRequest {
-  uint32 offset = 1;
-  uint32 limit = 2;
-  repeated uint64 ids = 3;
+  string tenantId = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
+  repeated uint64 ids = 4;
 }
 
 message GetPaymentsResponse {
@@ -129,7 +140,9 @@ message GetPaymentsResponse {
 }
 
 message AddPaymentsForInvoicesRequest {
-  repeated uint64 invoiceIds = 1;
+  string tenantId = 1;
+
+  repeated uint64 invoiceIds = 2;
 }
 
 message AddPaymentsForInvoicesResponse {

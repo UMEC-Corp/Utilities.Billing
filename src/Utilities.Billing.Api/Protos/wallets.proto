@@ -65,28 +65,33 @@ service StellarService
 
 message AddAssetRequest
 {
+  string tenantId = 1;
   // Asset Code
-  string assetCode = 1;
+  string assetCode = 2;
 
   // Issuer Account Id
-  string issuer = 2;
+  string issuer = 3;
 
   // Equipment model codes
-  repeated string modelCodes = 3;
+  repeated string modelCodes = 4;
+
 }
 
 message AddAssetResponse
 {
   // Asset ID in the system (uuid)
   string assetId = 1;
+
 }
 
 message UpdateAssetRequest
 {
+  string tenantId = 1;
   // Asset ID in the system (uuid)
-  string assetId = 1;
+  string assetId = 2;
+
   // Equipment model codes
-  repeated string modelCodes = 2;
+  repeated string modelCodes = 3;
 }
 
 message UpdateAssetResponse
@@ -96,8 +101,10 @@ message UpdateAssetResponse
 
 message GetAssetRequest
 {
+  string tenantId = 1;
   // Asset ID in the system (uuid)
-  string assetId = 1;
+  string assetId = 2;
+
 }
 
 message GetAssetResponse
@@ -117,15 +124,16 @@ message GetAssetResponse
 
 message CreateCustomerAccountRequest
 {
+  string tenantId = 1;
   // Asset ID in the system (uuid)
-  string assetId = 1;
+  string assetId = 2;
   // Permanent identifier of the metering device
-  string deviceSerial = 2;
+  string deviceSerial = 3;
   // Create a separate account (G-) for the meter or a multiplexed account (M-). In the case of G accounts, the movement of tokens will be clearly visible in the explorer, 
   // balances will be controlled by the blockchain, negative balances will not be possible, transactions will be more expensive. In the case of M accounts in the operation explorer 
   // by consumption will be visible in a general list for all metering devices, negative balances will be possible, the balance will not be controlled by the blockchain. 
   // In any case, the created account will be managed only through the system account associated with the asset. 
-  bool createMuxed = 3;
+  bool createMuxed = 4;
 }
 
 message CreateCustomerAccountResponse
@@ -136,8 +144,9 @@ message CreateCustomerAccountResponse
 
 message GetCustomerAccountRequest
 {
+  string tenantId = 1;
   // Account identifier in the system (uuid)
-  string customerAccountId = 1;
+  string customerAccountId = 2;
 }
 
 message GetCustomerAccountResponse
@@ -158,12 +167,13 @@ message GetCustomerAccountResponse
 
 message CreateInvoiceRequest
 {
+  string tenantId = 1;
   // Account identifier in the system (uuid)
-  string customerAccountId = 1;
+  string customerAccountId = 2;
   // Payer account
-  string payerAccount = 2;
+  string payerAccount = 3;
   // Replenishment amount, in tokens. '.' is used as a decimal separator.
-  string amount = 3;
+  string amount = 4;
 }
 
 message CreateInvoiceResponse
@@ -174,12 +184,13 @@ message CreateInvoiceResponse
 
 message ListInvoicesRequest
 {
+  string tenantId = 1;
   // Account ID in the system (uuid)
-  string customerAccountId = 1;
+  string customerAccountId = 2;
   // Start of period, unix timestamp, seconds
-  uint64 periodFrom = 2;
+  uint64 periodFrom = 3;
   // End of period, unix timestamp, seconds
-  uint32 periodTo = 3;
+  uint32 periodTo = 4;
 }
 
 message ListInvoicesResponse

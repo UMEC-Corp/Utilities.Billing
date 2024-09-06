@@ -18,7 +18,7 @@ public class BillingService : Protos.BillingService.BillingServiceBase
 
     public override async Task<AddInvoiceResponse> AddInvoice(AddInvoiceRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var reply = await tenant.AddInvoicesAsync(new AddInvoicesCommand
         {
             Items =
@@ -28,7 +28,7 @@ public class BillingService : Protos.BillingService.BillingServiceBase
                     AccountId = (long)request.AccountId,
                     Amount = (decimal)request.Amount,
                     Date = request.HasDate ? request.Date.ToDateTime() : default(DateTime?),
-                    DateTo =  request.HasDateTo ? request.DateTo.ToDateTime() : default(DateTime?),
+                    DateTo = request.HasDateTo ? request.DateTo.ToDateTime() : default(DateTime?),
                 }
             }
         });
@@ -42,7 +42,7 @@ public class BillingService : Protos.BillingService.BillingServiceBase
     public override async Task<AddPaymentsForInvoicesResponse> AddPaymentsForInvoices(
         AddPaymentsForInvoicesRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(context);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var reply = await tenant.AddPaymentsForInvoicesAsync(new AddPaymentsForInvoicesCommand
         {
             InvoiceIds = { request.InvoiceIds.Select(x => (long)x) }
