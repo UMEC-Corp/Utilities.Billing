@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Utilities.Billing.Api": {
+    "Development": {
       "commandName": "Project",
       "environmentVariables": {
         "CONSUL_HTTP_ADDR": "localhost:8503",
@@ -14,6 +14,16 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "publishAllPorts": true,
       "useSSL": true
+    },
+    "CoverageProfile": {
+      "commandName": "Executable",
+      "executablePath": "dotnet-coverage",
+      "commandLineArgs": "collect --output-format cobertura $(TargetDir)$(TargetName).exe",
+      "environmentVariables": {
+        "CONSUL_HTTP_ADDR": "localhost:8503",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7178"
+      }
     }
   }
 }

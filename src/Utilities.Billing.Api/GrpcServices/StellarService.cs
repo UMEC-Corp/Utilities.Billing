@@ -25,7 +25,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<AddAssetResponse> AddAsset(AddAssetRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var command = new AddAssetCommand
         {
             AssetCode = request.AssetCode,
@@ -40,7 +40,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<GetAssetResponse> GetAsset(GetAssetRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var command = new GetAssetCommand
         {
             Id = request.AssetId,
@@ -62,7 +62,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
 
     public override async Task<UpdateAssetResponse> UpdateAsset(UpdateAssetRequest request, ServerCallContext context)
     {
-        var tenant = _clusterClient.GetTenant(request.TenantId);
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
         var command = new UpdateAssetCommand
         {
             Id = request.AssetId,
