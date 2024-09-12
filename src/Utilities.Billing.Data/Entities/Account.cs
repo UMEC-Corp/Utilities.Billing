@@ -18,9 +18,9 @@ public class Account : DbEntityWithGuidKey
 
     public string Wallet { get; set; }
 
-    public string ControllerSerial {  get; set; }    
-    public string MeterNumber { get; set; }
+    public string DeviceSerial {  get; set; }    
+    public string InputCode { get; set; }
     
     public virtual ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
-    //public virtual ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
+    public virtual ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();
 }

@@ -342,8 +342,8 @@ public class TenantGrain : Grain, ITenantGrain
         var entityEntry = await _dbContext.Accounts.AddAsync(new Account
         {
             TenantId = this.GetPrimaryKey(),
-            ControllerSerial = command.ControllerSerial,
-            MeterNumber = command.MeterNumber,
+            DeviceSerial = command.ControllerSerial,
+            InputCode = command.MeterNumber,
             AssetId = asset.Id,
             Wallet = wallet
         });
