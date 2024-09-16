@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Utilities.Billing.Contracts;
-using Utilities.Billing.Data.Entities;
 using Utilities.Billing.Data;
-using Microsoft.EntityFrameworkCore;
+using Utilities.Billing.Data.Entities;
 
 namespace Utilities.Billing.Grains
 {
@@ -26,11 +21,11 @@ namespace Utilities.Billing.Grains
         {
             var deviceSerial = this.GetPrimaryKeyString();
 
-            var query = _dbContext.Accounts.Where(x => string.Compare(x.DeviceSerial, deviceSerial, true) == 0);
+            var query = _dbContext.Accounts.Where(x => x.DeviceSerial == deviceSerial);
 
             _inputStates = await _dbContext.Accounts
-                .Where(x => string.Compare(x.DeviceSerial, deviceSerial, true) == 0)
-                .SelectMany(x => x.Payments, (ac, p) => new
+                .Where(x => x.DeviceSerial == deviceSerial)
+                .SelectMany(x => x.Payments.DefaultIfEmpty(), (ac, p) => new
                 {
                     AccountId = ac.Id,
                     ac.Wallet,
@@ -39,7 +34,7 @@ namespace Utilities.Billing.Grains
                     AssetId = ac.Asset.Id,
                     AssetCode = ac.Asset.Code,
                     AssetIssuer = ac.Asset.Issuer,
-                    p.Amount
+                    Amount = p == null ? 0M : p.Amount
                 })
                 .GroupBy(x => x.InputCode)
                 .ToDictionaryAsync(x => x.Key, x => new InputInfo
@@ -62,7 +57,7 @@ namespace Utilities.Billing.Grains
             }
 
             var incomingValue = (decimal)double.Parse(command.IncomingValue);
-            var amount = incomingValue - inputInfo.CurrentValue;
+            var amount = Math.Round(incomingValue - inputInfo.CurrentValue, 7);
 
             await _paymentSystem.AddPaymentAsync(new AddPaymentCommand
             {
