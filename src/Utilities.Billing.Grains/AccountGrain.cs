@@ -19,12 +19,8 @@ namespace Utilities.Billing.Grains
 
         public override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            var deviceSerial = this.GetPrimaryKeyString();
-
-            var query = _dbContext.Accounts.Where(x => x.DeviceSerial == deviceSerial);
-
             _inputStates = await _dbContext.Accounts
-                .Where(x => x.DeviceSerial == deviceSerial)
+                .Where(x => x.DeviceSerial == this.GetPrimaryKeyString())
                 .SelectMany(x => x.Payments.DefaultIfEmpty(), (ac, p) => new
                 {
                     AccountId = ac.Id,
