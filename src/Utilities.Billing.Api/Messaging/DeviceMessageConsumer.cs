@@ -46,7 +46,7 @@ public class DeviceMessageConsumer : IConsumer<Batch<DeviceMessageReceived>>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to write device messages to the storage");
+            _logger.LogError(ex, "Failed to make payments from device messages");
             throw;
         }
     }
