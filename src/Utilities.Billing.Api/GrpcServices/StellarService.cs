@@ -80,8 +80,8 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var command = new CreateCustomerAccountCommand
         {
             AssetId = request.AssetId,
-            ControllerSerial = request.ControllerSerial,
-            MeterNumber = request.MeterNumber,
+            DeviceSerial = request.DeviceSerial,
+            InputCode = request.InputCode,
             CreateMuxed = request.CreateMuxed,
         };
 
