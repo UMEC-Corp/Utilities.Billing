@@ -41,8 +41,15 @@
 		<PackageReference Include="Utilities.Common.Grpc" Version="1.0.56" />
 	</ItemGroup>
 
+	<Choose>
+		<When Condition="Exists('..\..\..\Utilities.Common\src\Utilities.Common.Messages\Utilities.Common.Messages.csproj')" />
+		<Otherwise>
+			<ItemGroup>
+				<PackageReference Include="Utilities.Common.Messages" Version="1.0.10-develop" />
+			</ItemGroup>
+		</Otherwise>
+	</Choose>
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Utilities.Common\src\Utilities.Common.Messages\Utilities.Common.Messages.csproj" />
 		<ProjectReference Include="..\Utilities.Billing.Grains\Utilities.Billing.Grains.csproj" />
 		<ProjectReference Include="..\Utilities.Billing.StellarWallets\Utilities.Billing.StellarWallets.csproj" />
 	</ItemGroup>
