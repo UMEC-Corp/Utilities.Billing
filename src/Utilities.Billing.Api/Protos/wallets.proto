@@ -10,6 +10,14 @@ package stellar;
 service StellarService 
 {
   // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
+  rpc AddTenant(AddTenantRequest) returns (AddTenantResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants"
+      body: "*"
+    };
+  }
+
+  // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
     option (google.api.http) = {
       post: "/v1/assets"
@@ -61,6 +69,19 @@ service StellarService
       get: "/v1/invoices"
     };
   }
+}
+
+message AddTenantRequest
+{
+    // Tenant Id (uuid)
+    string id = 1;
+    // Tenant Name
+    string name = 2;
+}
+
+message AddTenantResponse 
+{
+    string id = 1;
 }
 
 message AddAssetRequest

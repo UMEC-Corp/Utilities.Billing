@@ -20,7 +20,7 @@ public class TenantGrain : Grain, ITenantGrain
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        _tenantState = await _dbContext.Tenants.FindAsync(this.GetPrimaryKey());
+        _tenantState = await _dbContext.Tenants.FirstOrDefaultAsync(x => x.Id == this.GetPrimaryKey());
     }
 
     public async Task<long> AddAccountTypeAsync(AddAccountTypeCommand command)
@@ -226,6 +226,23 @@ public class TenantGrain : Grain, ITenantGrain
         throw new NotImplementedException();
     }
 
+    public async Task<AddTenantReply> AddTenant(AddTenantCommand command)
+    {
+        var tenantId = this.GetPrimaryKey();
+        var existsTenant = await _dbContext.Tenants.Where(x => x.Id == tenantId).FirstOrDefaultAsync();
+        if (existsTenant != null)
+        {
+            throw Errors.EntityExists();
+        }
+
+        var tenant = new Tenant() { Id = tenantId, Name = command.Name };
+        await _dbContext.Tenants.AddAsync(tenant);
+        await _dbContext.SaveChangesAsync();
+
+        _tenantState = tenant;
+
+        return new AddTenantReply { Id = tenantId };
+    }
 
     public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
     {
@@ -417,8 +434,9 @@ public class TenantGrain : Grain, ITenantGrain
 
         var invoices = await _dbContext.Invoices
             .Where(x => x.AccountId == new Guid(command.CustomerAccountId) && x.Account.TenantId == tenantId)
-            .Where(x=> x.Created >= start && x.Created <= stop)
-            .Select(x => new { 
+            .Where(x => x.Created >= start && x.Created <= stop)
+            .Select(x => new
+            {
                 Id = x.Id,
                 Amount = x.Amount,
                 Xdr = x.Xdr,
@@ -426,13 +444,13 @@ public class TenantGrain : Grain, ITenantGrain
             .ToListAsync();
 
         var reply = new ListInvoicesReply();
-        foreach(var invoice in invoices)
+        foreach (var invoice in invoices)
         {
             reply.Items.Add(new ListInvoicesReply.InvoiceItem
             {
                 TransactionId = invoice.Id.ToString(),
                 Amount = invoice.Amount.ToString(CultureInfo.InvariantCulture),
-                Xdr = invoice.Xdr,  
+                Xdr = invoice.Xdr,
                 Processed = true, // ??
             });
         }

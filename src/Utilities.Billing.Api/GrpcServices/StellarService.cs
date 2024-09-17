@@ -23,6 +23,16 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         _clusterClient = clusterClient;
     }
 
+    public override async Task<AddTenantResponse> AddTenant(AddTenantRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.Id));
+        var reply =  await tenant.AddTenant(new AddTenantCommand
+        {
+            Name = request.Name,
+        });
+
+        return new AddTenantResponse { Id = reply.Id.ToString() };
+    }
     public override async Task<AddAssetResponse> AddAsset(AddAssetRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
