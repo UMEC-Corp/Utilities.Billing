@@ -19,10 +19,29 @@ public class StellarWalletsClient : IPaymentSystem
     {
         _options = options;
     }
-    public Task AddPaymentAsync(AddPaymentCommand command)
+    public async Task AddPaymentAsync(AddPaymentCommand command)
     {
-        throw new NotImplementedException();
+        UseNetwork();
+        var server = new Server(_options.CurrentValue.HorizonUrl);
+
+        var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
+        var masterAccount = await server.Accounts.Account(masterKeyPair.AccountId);
+
+        var recieverKeyPair = KeyPair.FromAccountId(command.RecieverAccountId);
+        var recieverAccount = await server.Accounts.Account(recieverKeyPair.AccountId);
+
+        var asset = StellarDotnetSdk.Assets.Asset.CreateNonNativeAsset(command.AssetCode, command.AssetIssuerAccountId);
+        var amount = command.Amount.ToString(CultureInfo.InvariantCulture);
+
+        var paymentOperation = new PaymentOperation(recieverKeyPair, asset, amount);
+
+        var transaction = new TransactionBuilder(masterAccount).AddOperation(paymentOperation).Build();
+
+        transaction.Sign(masterKeyPair);
+
+        await SendTran(server, transaction);
     }
+
 
     public async Task<string> CreateWalletAsync(CreateWalletCommand command)
     {
@@ -36,7 +55,7 @@ public class StellarWalletsClient : IPaymentSystem
 
         // Почему 3? 
         //
-        // В Стелларе есть понятие минамального баланса. На данный момент он составляте 0.5 XLM
+        // В Стелларе есть понятие минимального баланса. На данный момент он составляте 0.5 XLM
         // Для того чтобы кошелек считался "живым", на нем должно быть два минимальных баланса, т.е. 1 XLM
         // Кроме этого, на увеличение минимального баланса влияют Subentry (0.5 XLM за каждый). В Subentry входят: trustlines , offers, signers, data entries
         // В нашем случае при создании кошелька добавляется Ассет (trustline) (+0.5 XLM), а также дополнительная подпись мастер-аккаунтом (signer) (+0.5 XLM)

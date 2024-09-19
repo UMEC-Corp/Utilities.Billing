@@ -10,6 +10,14 @@ package stellar;
 service StellarService 
 {
   // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
+  rpc AddTenant(AddTenantRequest) returns (AddTenantResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants"
+      body: "*"
+    };
+  }
+
+  // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
     option (google.api.http) = {
       post: "/v1/assets"
@@ -61,6 +69,19 @@ service StellarService
       get: "/v1/invoices"
     };
   }
+}
+
+message AddTenantRequest
+{
+    // Tenant Id (uuid)
+    string id = 1;
+    // Tenant Name
+    string name = 2;
+}
+
+message AddTenantResponse 
+{
+    string id = 1;
 }
 
 message AddAssetRequest
@@ -128,9 +149,9 @@ message CreateCustomerAccountRequest
   // Asset ID in the system (uuid)
   string assetId = 2;
   // Permanent identifier of the controller
-  string controllerSerial = 3;
+  string deviceSerial = 3;
   // Number of metering device
-  string meterNumber = 4;
+  string inputCode = 4;
   // Create a separate account (G-) for the meter or a multiplexed account (M-). In the case of G accounts, the movement of tokens will be clearly visible in the explorer, 
   // balances will be controlled by the blockchain, negative balances will not be possible, transactions will be more expensive. In the case of M accounts in the operation explorer 
   // by consumption will be visible in a general list for all metering devices, negative balances will be possible, the balance will not be controlled by the blockchain. 

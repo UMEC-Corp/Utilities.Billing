@@ -4,12 +4,11 @@ namespace Utilities.Billing.Data.Entities;
 
 public class Payment : DbEntityWithLongKey
 {
-    //public long AccountId { get; set; }
-    //public virtual Account Account { get; set; }
-    public decimal TokenAmount { get; set; }
-    public decimal CurrencyAmount { get; set; }
-    public DateTime? Date { get; set; }
-    public DateTime? DateTo { get; set; }
+    public Guid AccountId { get; set; }
+    public virtual Account Account { get; set; }
+    public Guid AssetId { get; set; }
+    public Asset Asset { get; set; }
+    public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; }
     public string? Transaction { get; set; }
 }
