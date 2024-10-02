@@ -9,13 +9,22 @@ package stellar;
 // API for issuing invoices for consumed housing and communal services in Stellar.
 service StellarService 
 {
-  // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
+  // Add information to the system about tenant (management company)
   rpc AddTenant(AddTenantRequest) returns (AddTenantResponse) {
     option (google.api.http) = {
       post: "/v1/tenants"
       body: "*"
     };
   }
+
+  // Change the parameters of a registered tenant (management company)
+  rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse) {
+    option (google.api.http) = {
+      put: "/v1/tenants"
+      body: "*"
+    };
+  }
+
 
   // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
@@ -77,11 +86,25 @@ message AddTenantRequest
     string id = 1;
     // Tenant Name
     string name = 2;
+    // AccountId in Stellar
+    string account = 3;
 }
-
 message AddTenantResponse 
 {
     string id = 1;
+}
+
+message UpdateTenantRequest
+{
+    // Tenant Id (uuid)
+    string id = 1;
+    // Tenant Name
+    string name = 2;
+    // AccountId in Stellar
+    string account = 3;
+}
+message UpdateTenantResponse 
+{
 }
 
 message AddAssetRequest
