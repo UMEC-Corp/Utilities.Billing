@@ -10,6 +10,7 @@ using StellarDotnetSdk.Transactions;
 using StellarDotnetSdk.Xdr;
 using System.Globalization;
 using System.Runtime;
+using System.Text.Json;
 using Utilities.Billing.Contracts;
 
 namespace Utilities.Billing.StellarWallets;
@@ -133,12 +134,13 @@ public class StellarWalletsClient : IPaymentSystem
         var devicePaymentOperation = new PaymentOperation(masterKeyPair, asset, amount, deviceAccount.KeyPair);
         var payerPaymentOperation = new PaymentOperation(tenantKeyPair, asset, amount, payerAccount.KeyPair);
 
+        var invoiceMemo = JsonSerializer.Serialize(new InvoiceMemo { InvoiceId = command.InvoiceId });
         var transaction = new TransactionBuilder(masterAccount)
                 .AddOperation(devicePaymentOperation)
                 .AddOperation(payerPaymentOperation)
                 // A memo allows you to add your own metadata to a transaction. It's
                 // optional and does not affect how Stellar treats the transaction.
-                .AddMemo(new MemoId((ulong)command.InvoiceId))
+                .AddMemo(new MemoText(invoiceMemo))
                 // Wait a maximum of three minutes for the transaction
                 //.setTimeout(180)
                 // Set the amount of lumens you're willing to pay per operation to submit your transaction
@@ -185,7 +187,20 @@ public class StellarWalletsClient : IPaymentSystem
         {
             foreach (var transaction in transactionsPage.Records)
             {
-                if (!long.TryParse(transaction.MemoValue, out var invoiceId) || !remainingInvoices.Contains(invoiceId))
+                if (transaction.MemoType != "text")
+                {
+                    continue;
+                }
+
+                var memo = JsonSerializer.Deserialize<InvoiceMemo>(transaction.MemoValue);
+                if (memo == null || memo.InvoiceId == 0)
+                {
+                    continue;
+                }
+
+                var invoiceId = memo.InvoiceId;
+
+                if (!remainingInvoices.Contains(invoiceId))
                 {
                     continue;
                 }
