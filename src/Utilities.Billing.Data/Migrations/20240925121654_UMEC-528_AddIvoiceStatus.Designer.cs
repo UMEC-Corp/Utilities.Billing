@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Utilities.Billing.Data;
@@ -11,9 +12,11 @@ using Utilities.Billing.Data;
 namespace Utilities.Billing.Data.Migrations
 {
     [DbContext(typeof(BillingDbContext))]
-    partial class BillingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240925121654_UMEC-528_AddIvoiceStatus")]
+    partial class UMEC528_AddIvoiceStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -320,6 +323,7 @@ namespace Utilities.Billing.Data.Migrations
                         .HasColumnName("status");
 
                     b.Property<string>("Xdr")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("xdr");
 
@@ -400,11 +404,6 @@ namespace Utilities.Billing.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
-
-                    b.Property<string>("Wallet")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("wallet");
 
                     b.HasKey("Id")
                         .HasName("pk_tenants");
