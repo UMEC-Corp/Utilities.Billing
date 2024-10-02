@@ -235,13 +235,31 @@ public class TenantGrain : Grain, ITenantGrain
             throw Errors.EntityExists();
         }
 
-        var tenant = new Tenant() { Id = tenantId, Name = command.Name };
+        var tenant = new Tenant() { Id = tenantId, Name = command.Name, Wallet = command.Account };
         await _dbContext.Tenants.AddAsync(tenant);
         await _dbContext.SaveChangesAsync();
 
         _tenantState = tenant;
 
         return new AddTenantReply { Id = tenantId };
+    }
+
+    public async Task UpdateTenant(UpdateTenantCommand command)
+    {
+        var tenantId = this.GetPrimaryKey();
+        var tenant = await _dbContext.Tenants.FindAsync(tenantId);
+        if (tenant == null)
+        {
+            throw Errors.NotFound(nameof(Tenant), new List<string> { tenantId.ToString() });
+        }
+
+        tenant.Name = command.Name;
+        tenant.Wallet = command.Account;
+        
+        await _dbContext.SaveChangesAsync();
+
+        _tenantState = tenant;
+
     }
 
     public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
@@ -398,32 +416,50 @@ public class TenantGrain : Grain, ITenantGrain
         {
             throw Errors.InvalidValue(nameof(command.Amount), command.Amount);
         }
+        await _dbContext.Database.BeginTransactionAsync();
 
         var customerAccount = await GetCustomerAccount(new GetCustomerAccountCommand { CustomerAccountId = command.CustomerAccountId });
-
-        var xdr = await _paymentSystem.CreateInvoiceXdr(new CreateInvoiceXdrCommand
-        {
-            Amount = amount,
-            AssetCode = customerAccount.AssetCode,
-            AssetsIssuerAccountId = customerAccount.AssetIssuer,
-            DeviceAccountId = customerAccount.Wallet,
-            PayerAccountId = command.PayerAccount
-        });
 
         var invoice = new Invoice
         {
             AccountId = customerAccount.Id,
             PayerWallet = command.PayerAccount,
             Amount = amount,
-            Xdr = xdr
+            Status = InvoiceStatus.New,
         };
         await _dbContext.Invoices.AddAsync(invoice);
         await _dbContext.SaveChangesAsync();
 
-        return new CreateInvoiceReply
+        try
         {
-            Xdr = xdr,
-        };
+            var xdr = await _paymentSystem.CreateInvoiceXdr(new CreateInvoiceXdrCommand
+            {
+                InvoiceId = invoice.Id,
+                Amount = amount,
+                AssetCode = customerAccount.AssetCode,
+                AssetsIssuerAccountId = customerAccount.AssetIssuer,
+                TenantAccountId = _tenantState.Wallet,
+                DeviceAccountId = customerAccount.Wallet,
+                PayerAccountId = command.PayerAccount
+            });
+
+            invoice.Xdr = xdr;
+            invoice.Status = InvoiceStatus.Pending;
+            await _dbContext.SaveChangesAsync();
+
+            await _dbContext.Database.CommitTransactionAsync();
+
+            return new CreateInvoiceReply
+            {
+                Xdr = xdr,
+            };
+        }
+        catch
+        {
+            await _dbContext.Database.RollbackTransactionAsync();
+            throw;
+        }
+
     }
 
     public async Task<ListInvoicesReply> ListInvoices(ListInvoicesCommand command)
@@ -440,6 +476,7 @@ public class TenantGrain : Grain, ITenantGrain
                 Id = x.Id,
                 Amount = x.Amount,
                 Xdr = x.Xdr,
+                Status = x.Status
             })
             .ToListAsync();
 
@@ -451,12 +488,14 @@ public class TenantGrain : Grain, ITenantGrain
                 TransactionId = invoice.Id.ToString(),
                 Amount = invoice.Amount.ToString(CultureInfo.InvariantCulture),
                 Xdr = invoice.Xdr,
-                Processed = true, // ??
+                Processed = invoice.Status == InvoiceStatus.Completed ? true : false,
             });
         }
 
         return reply;
     }
+
+
 
     public static class Errors
     {
