@@ -2,7 +2,9 @@
 using StellarDotnetSdk;
 using StellarDotnetSdk.Accounts;
 using StellarDotnetSdk.Assets;
+using StellarDotnetSdk.Memos;
 using StellarDotnetSdk.Operations;
+using StellarDotnetSdk.Requests;
 using StellarDotnetSdk.Responses;
 using StellarDotnetSdk.Transactions;
 using StellarDotnetSdk.Xdr;
@@ -116,6 +118,9 @@ public class StellarWalletsClient : IPaymentSystem
         var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
         var masterAccount = await server.Accounts.Account(masterKeyPair.AccountId);
 
+        var tenantKeyPair = KeyPair.FromAccountId(command.TenantAccountId);
+        var tenantAccount = await server.Accounts.Account(tenantKeyPair.AccountId);
+
         var payerKeyPair = KeyPair.FromAccountId(command.PayerAccountId);
         var payerAccount = await server.Accounts.Account(payerKeyPair.AccountId);
 
@@ -126,14 +131,14 @@ public class StellarWalletsClient : IPaymentSystem
 
         var amount = command.Amount.ToString(CultureInfo.InvariantCulture);
         var devicePaymentOperation = new PaymentOperation(masterKeyPair, asset, amount, deviceAccount.KeyPair);
-        var payerPaymentOperation = new PaymentOperation(masterKeyPair, asset, amount, payerAccount.KeyPair);
+        var payerPaymentOperation = new PaymentOperation(tenantKeyPair, asset, amount, payerAccount.KeyPair);
 
         var transaction = new TransactionBuilder(masterAccount)
                 .AddOperation(devicePaymentOperation)
                 .AddOperation(payerPaymentOperation)
                 // A memo allows you to add your own metadata to a transaction. It's
                 // optional and does not affect how Stellar treats the transaction.
-                //.addMemo(Memo.text("Test Transaction"))
+                .AddMemo(new MemoId((ulong)command.InvoiceId))
                 // Wait a maximum of three minutes for the transaction
                 //.setTimeout(180)
                 // Set the amount of lumens you're willing to pay per operation to submit your transaction
@@ -164,5 +169,66 @@ public class StellarWalletsClient : IPaymentSystem
         }
 
     }
+
+    public async Task<ICollection<InvoiceInfomation>> GetInvoicesInformationAsync(IEnumerable<long> invoiceIds)
+    {
+        var result = new List<InvoiceInfomation>();
+        var remainingInvoices = invoiceIds.ToList();
+
+        UseNetwork();
+        var server = new Server(_options.CurrentValue.HorizonUrl);
+
+        var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
+
+        var transactionsPage = await GetPageOfTransactions(server, account: masterKeyPair.AccountId);
+        while (transactionsPage.Records.Count > 0 && remainingInvoices.Any())
+        {
+            foreach (var transaction in transactionsPage.Records)
+            {
+                if (!long.TryParse(transaction.MemoValue, out var invoiceId) || !remainingInvoices.Contains(invoiceId))
+                {
+                    continue;
+                }
+
+                var item = new InvoiceInfomation
+                {
+                    Id = invoiceId,
+                    Status = transaction.Result.IsSuccess ? PaymentSystemTransactionStatus.Success : PaymentSystemTransactionStatus.Failed
+                };
+
+                result.Add(item);
+
+                remainingInvoices.Remove(invoiceId);
+            }
+
+            transactionsPage = await transactionsPage.NextPage();
+        }
+
+
+        return result;
+    }
+
+    private async Task<StellarDotnetSdk.Responses.Page<TransactionResponse>> GetPageOfTransactions(Server server, int limit = 100, string? account = null, OrderDirection? order = OrderDirection.DESC, string? cursor = null)
+    {
+        var builder = server.Transactions;
+
+        if (account != null)
+        {
+            builder.ForAccount(account);
+        }
+
+        if (order != null)
+        {
+            builder.Order(order.Value);
+        }
+
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            builder.Cursor(cursor);
+        }
+
+        return await builder.Limit(limit).Execute();
+    }
+
 
 }

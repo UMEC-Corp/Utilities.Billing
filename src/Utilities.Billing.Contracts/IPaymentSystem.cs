@@ -6,4 +6,5 @@ public interface IPaymentSystem
     Task<string> CreateInvoiceXdr(CreateInvoiceXdrCommand command);
     Task<string> CreateWalletAsync(CreateWalletCommand command);
     Task<string> GetMasterAccountAsync();
+    Task<ICollection<InvoiceInfomation>> GetInvoicesInformationAsync(IEnumerable<long> invoiceIds);
 }
