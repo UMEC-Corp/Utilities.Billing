@@ -1,7 +1,7 @@
 ﻿namespace Utilities.Billing.Contracts
 {
     [GenerateSerializer]
-    public class AddTenantCommand
+    public class UpdateTenantCommand
     {
         [Id(0)]
         public string Name { get; set; }

@@ -17,4 +17,5 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command);
     Task<ListInvoicesReply> ListInvoices(ListInvoicesCommand command);
     Task<AddTenantReply> AddTenant(AddTenantCommand command);
+    Task UpdateTenant(UpdateTenantCommand updateTenantCommand);
 }
