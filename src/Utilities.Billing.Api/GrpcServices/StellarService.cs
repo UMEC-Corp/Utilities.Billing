@@ -29,10 +29,23 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var reply =  await tenant.AddTenant(new AddTenantCommand
         {
             Name = request.Name,
+            Account = request.Account
         });
 
         return new AddTenantResponse { Id = reply.Id.ToString() };
     }
+
+    public override async Task<UpdateTenantResponse> UpdateTenant(UpdateTenantRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.Id));
+        await tenant.UpdateTenant(new UpdateTenantCommand
+        {
+            Name = request.Name,
+            Account = request.Account
+        });
+        return new UpdateTenantResponse();
+    }
+
     public override async Task<AddAssetResponse> AddAsset(AddAssetRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));

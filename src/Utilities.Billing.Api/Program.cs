@@ -10,6 +10,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Messaging;
 using Utilities.Billing.Api.OpenApi;
+using Utilities.Billing.Api.Tasks;
 using Utilities.Billing.Data;
 using Utilities.Billing.StellarWallets;
 using Utilities.Common.Consul;
@@ -63,6 +64,14 @@ class Program
         });
 
         builder.Services.AddWellKnownHealthChecks();
+
+        var section = builder.Configuration.GetSection(UpdateInvoiceStatusesTaskSettings.SectionName);
+        builder.Services.Configure<UpdateInvoiceStatusesTaskSettings>(section);
+        var taskSettings = section.Get<UpdateInvoiceStatusesTaskSettings>();
+        if (taskSettings != null && taskSettings.Period > 0)
+        {
+            builder.Services.AddTransient<IHostedService, UpdateInvoiceStatusesTask>();
+        }
 
         var app = builder.Build();
 
