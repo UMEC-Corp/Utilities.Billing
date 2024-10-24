@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Utilities.Billing.Contracts;
 
-namespace Utilities.Billing.TonWallets;
+namespace Utilities.Billing.TonWallets.Extensions;
 
 public static class Extensions
 {
