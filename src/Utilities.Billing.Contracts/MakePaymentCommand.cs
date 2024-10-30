@@ -5,8 +5,8 @@ namespace Utilities.Billing.Contracts
     public class MakePaymentCommand
     {
         [Id(0)]
-        public string? InputCode { get; set; }
+        public string InputCode { get; set; }
         [Id(1)]
-        public byte[] IncomingValue { get; set; }
+        public double IncomingValue { get; set; }
     }
 }

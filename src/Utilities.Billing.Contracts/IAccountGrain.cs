@@ -2,6 +2,6 @@
 {
     public interface IDeviceGrain : IGrainWithStringKey
     {
-        Task<MakePaymentReply> MakePayment(MakePaymentCommand command);
+        Task<MakePaymentReply> MakePaymentAsync(MakePaymentCommand command);
     }
 }

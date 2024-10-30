@@ -45,14 +45,14 @@ namespace Utilities.Billing.Grains
                 });
         }
 
-        public async Task<MakePaymentReply> MakePayment(MakePaymentCommand command)
+        public async Task<MakePaymentReply> MakePaymentAsync(MakePaymentCommand command)
         {
             if (!_inputStates.TryGetValue(command.InputCode, out var inputInfo))
             {
-                return null;
+                return MakePaymentReply.Skipped;
             }
 
-            var incomingValue = (decimal)double.Parse(command.IncomingValue);
+            var incomingValue = (decimal)command.IncomingValue;
             var amount = Math.Round(incomingValue - inputInfo.CurrentValue, 7);
 
             await _paymentSystem.AddPaymentAsync(new AddPaymentCommand
