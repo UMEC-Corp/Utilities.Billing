@@ -6,7 +6,7 @@ netcore-service:
 
   environment: "Production"
 
-  consulUrl: "common-services-consul-headless.project-management.svc.cluster.local:8500"
+  consulUrl: "common-services-consul-headless.umec-production.svc.cluster.local:8500"
 
   grpc:
     host: "grpc-billing.umec.deviot.cloud"
