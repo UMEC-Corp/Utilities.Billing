@@ -159,7 +159,14 @@ public class StellarWalletsClient : IPaymentSystem
 
     private void UseNetwork()
     {
-        Network.UseTestNetwork();
+        if (_options.CurrentValue.UseTestnet)
+        {
+            Network.UseTestNetwork();
+        }
+        else
+        {
+            Network.UsePublicNetwork();
+        }
     }
 
     private async Task SendTran(Server server, StellarDotnetSdk.Transactions.Transaction transaction)
