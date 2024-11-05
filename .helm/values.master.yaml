@@ -9,10 +9,10 @@ netcore-service:
   consulUrl: "common-services-consul-headless.project-management.svc.cluster.local:8500"
 
   grpc:
-    host: "grpc-billing.umec-master.deviot.cloud"
+    host: "grpc-billing.umec.deviot.cloud"
     targetPort: 81
     tls:
-      secretName: "wc-umec-master-deviot-cloud-crt-secret"
+      secretName: "wc-deviot-cloud-crt-secret"
 
   probes:
     enabled: true
