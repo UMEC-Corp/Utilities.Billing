@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
-import "Protos/data.proto";
+import "Protos/billing/v1/data.proto";
 import "google/api/annotations.proto";
 package stellar;
 
@@ -25,7 +25,7 @@ service StellarService
     };
   }
 
-
+  
   // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
     option (google.api.http) = {

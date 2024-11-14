@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
-import "Protos/data.proto";
+import "Protos/billing/v1/data.proto";
 
 package billing;
 
