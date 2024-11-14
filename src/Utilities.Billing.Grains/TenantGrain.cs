@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StellarDotnetSdk;
 using System.Globalization;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
@@ -255,7 +254,7 @@ public class TenantGrain : Grain, ITenantGrain
 
         tenant.Name = command.Name;
         tenant.Wallet = command.Account;
-        
+
         await _dbContext.SaveChangesAsync();
 
         _tenantState = tenant;
@@ -360,6 +359,16 @@ public class TenantGrain : Grain, ITenantGrain
 
     public async Task<CreateCustomerAccountReply> CreateCustomerAccount(CreateCustomerAccountCommand command)
     {
+        var tenantId = this.GetPrimaryKey();
+        var existsAccount = _dbContext.Accounts
+            .Where(x => x.TenantId == tenantId)
+            .Where(x => x.DeviceSerial == command.DeviceSerial && x.InputCode == command.InputCode)
+            .Where(x => x.State != AccountState.Deleted);
+        if (await existsAccount.AnyAsync())
+        {
+            throw Errors.EntityExists();
+        }
+
         var wallet = await _paymentSystem.CreateWalletAsync(new CreateWalletCommand
         {
             CreateMuxed = command.CreateMuxed,
@@ -380,7 +389,8 @@ public class TenantGrain : Grain, ITenantGrain
             DeviceSerial = command.DeviceSerial,
             InputCode = command.InputCode,
             AssetId = asset.Id,
-            Wallet = wallet
+            Wallet = wallet,
+            State = AccountState.Ok
         });
 
         await _dbContext.SaveChangesAsync();
@@ -398,6 +408,15 @@ public class TenantGrain : Grain, ITenantGrain
         {
             throw Errors.NotFound(nameof(Account), new List<string> { command.CustomerAccountId });
         }
+        if (account.TenantId != this.GetPrimaryKey())
+        {
+            throw Errors.BelongsAnotherTenant(nameof(Asset), command.CustomerAccountId);
+        }
+        if (account.State != AccountState.Ok)
+        {
+            throw Errors.IncorrectState(nameof(Account), (int)account.State);
+        }
+
 
         return new GetCustomerAccountReply
         {
@@ -408,6 +427,49 @@ public class TenantGrain : Grain, ITenantGrain
             AssetIssuer = account.Asset.Issuer,
             MasterAccount = await _paymentSystem.GetMasterAccountAsync()
         };
+    }
+
+    public async Task DeleteCustomerAccount(DeleteCustomerAccountCommand command)
+    {
+        var tenantId = this.GetPrimaryKey();
+        var account = await _dbContext.Accounts
+            .Include(x => x.Asset)
+            .FirstOrDefaultAsync(x => x.Id == new Guid(command.CustomerAccountId));
+        if (account == null)
+        {
+            throw Errors.NotFound(nameof(Account), new List<string> { command.CustomerAccountId });
+        }
+
+        if (account.State != AccountState.Ok)
+        {
+            throw Errors.IncorrectState(nameof(Account), (int)account.State);
+        }
+
+        account.State = AccountState.Deleting;
+        await _dbContext.SaveChangesAsync();
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _paymentSystem.DeleteCustomerAccountAsync(new DeleteCustomerAccount
+                {
+                    CustomerAccountId = account.Wallet,
+                    AssetCode = account.Asset.Code,
+                    AssetIssuerAccountId = account.Asset.Issuer
+                });
+
+                account.State = AccountState.Deleted;
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                account.State = AccountState.Ok;  // ??
+                await _dbContext.SaveChangesAsync();
+            }
+        });
+
+        return;
     }
 
     public async Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command)
@@ -495,7 +557,65 @@ public class TenantGrain : Grain, ITenantGrain
         return reply;
     }
 
+    public async Task<ListCustomerAccountsReply> ListCustomerAccounts(ListCustomerAccountsCommand command)
+    {
+        var tenantId = this.GetPrimaryKey();
+        var accounts = await _dbContext.Accounts
+            .Where(x => x.TenantId == tenantId)
+            .Select(x => new
+            {
+                x.Id,
+                x.Wallet,
+                AssetCode = x.Asset.Code,
+                x.DeviceSerial,
+                x.InputCode,
+                x.State
+            })
+            .ToListAsync();
 
+        var reply = new ListCustomerAccountsReply();
+        foreach (var account in accounts)
+        {
+            reply.Items.Add(new ListCustomerAccountsReply.Item
+            {
+                Id = account.Id,
+                Wallet = account.Wallet,
+                AssetCode = account.AssetCode,
+                DeviceSerial = account.DeviceSerial,
+                InputCode = account.InputCode,
+                State = (ContractsAccountState)account.State
+            });
+        }
+
+        return reply;
+    }
+
+    public async Task<ListAssetsReply> ListAssets(ListAssetsCommand command)
+    {
+        var tenantId = this.GetPrimaryKey();
+        var assets = await _dbContext.Assets
+            .Where(x => x.TenantId == tenantId)
+            .Select(x => new
+            {
+                x.Id,
+                x.Code,
+                x.Issuer
+            })
+            .ToListAsync();
+
+        var reply = new ListAssetsReply();
+        foreach (var asset in assets)
+        {
+            reply.Items.Add(new ListAssetsReply.Item
+            {
+                Id = asset.Id,
+                Code = asset.Code,
+                Issuer = asset.Issuer
+            });
+        }
+
+        return reply;
+    }
 
     public static class Errors
     {
@@ -521,6 +641,11 @@ public class TenantGrain : Grain, ITenantGrain
         internal static Exception InvalidValue(string field, string value)
         {
             throw new InvalidOperationException($"{field} has ivalid value: {value}");
+        }
+
+        internal static Exception IncorrectState(string entityName, int state)
+        {
+            throw new InvalidOperationException($"{entityName} has incorrecct state: {state}");
         }
     }
 }

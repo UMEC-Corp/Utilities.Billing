@@ -26,7 +26,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
     public override async Task<AddTenantResponse> AddTenant(AddTenantRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.Id));
-        var reply =  await tenant.AddTenant(new AddTenantCommand
+        var reply = await tenant.AddTenant(new AddTenantCommand
         {
             Name = request.Name,
             Account = request.Account
@@ -97,6 +97,26 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         return new UpdateAssetResponse { };
     }
 
+    public override async Task<ListAssetsResponse> ListAssets(ListAssetsRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+        var command = new ListAssetsCommand { };
+
+        var response = new ListAssetsResponse { };
+        var reply = await tenant.ListAssets(command);
+        foreach (var item in reply.Items)
+        {
+            response.Items.Add(new ListAssetsResponse.Types.AssetsItem
+            {
+                AssetId = item.Id.ToString(),
+                AssetCode = item.Code,
+                IssuerAccount = item.Issuer,
+            });
+        }
+
+        return response;
+    }
+
     public override async Task<CreateCustomerAccountResponse> CreateCustomerAccount(CreateCustomerAccountRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
@@ -134,6 +154,42 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         };
     }
 
+    public override async Task<ListCustomerAccountsResponse> ListCustomerAccounts(ListCustomerAccountsRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+        var command = new ListCustomerAccountsCommand { };
+
+        var response = new ListCustomerAccountsResponse { };
+        var reply = await tenant.ListCustomerAccounts(command);
+        foreach(var item in reply.Items)
+        {
+            response.Items.Add(new ListCustomerAccountsResponse.Types.AccountsItem
+            {
+                CustomerAccountId = item.Id.ToString(),
+                CustomerAccount = item.Wallet,
+                Asset = item.AssetCode,
+                DeviceSerial = item.DeviceSerial,
+                InputCode = item.InputCode,
+                State = (int)item.State,
+            });
+        }
+
+        return response;
+    }
+
+    public override async Task<DeleteCustomerAccountResponse> DeleteCustomerAccount(DeleteCustomerAccountRequest request, ServerCallContext context)
+    {
+        var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
+        var command = new DeleteCustomerAccountCommand
+        {
+            CustomerAccountId = request.CustomerAccountId,
+        };
+
+        await tenant.DeleteCustomerAccount(command);
+
+        return new DeleteCustomerAccountResponse { };
+    }
+
     public override async Task<CreateInvoiceResponse> CreateInvoice(CreateInvoiceRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
@@ -168,7 +224,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var reply = await tenant.ListInvoices(command);
 
         var response = new ListInvoicesResponse();
-        foreach ( var item in reply.Items )
+        foreach (var item in reply.Items)
         {
             response.Items.Add(new ListInvoicesResponse.Types.InvoicesListItem
             {
