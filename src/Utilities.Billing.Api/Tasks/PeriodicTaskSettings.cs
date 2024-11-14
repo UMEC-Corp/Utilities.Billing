@@ -2,6 +2,6 @@
 {
     public class PeriodicTaskSettings
     {
-        public double Period { get; set; }
+        public int Period { get; set; }
     }
 }
