@@ -20,6 +20,8 @@ public class Account : DbEntityWithGuidKey
 
     public string DeviceSerial {  get; set; }    
     public string InputCode { get; set; }
+
+    public AccountState State { get; set; }
     
     public virtual ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
     public virtual ICollection<Payment> Payments { get; set; } = new HashSet<Payment>();

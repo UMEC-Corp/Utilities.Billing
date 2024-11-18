@@ -7,4 +7,5 @@ public interface IPaymentSystem
     Task<string> CreateWalletAsync(CreateWalletCommand command);
     Task<string> GetMasterAccountAsync();
     Task<ICollection<InvoiceInfomation>> GetInvoicesInformationAsync(IEnumerable<long> invoiceIds);
+    Task DeleteCustomerAccountAsync(DeleteCustomerAccount command);
 }

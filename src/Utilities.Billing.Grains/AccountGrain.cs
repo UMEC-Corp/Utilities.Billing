@@ -21,6 +21,7 @@ namespace Utilities.Billing.Grains
         {
             _inputStates = await _dbContext.Accounts
                 .Where(x => x.DeviceSerial == this.GetPrimaryKeyString())
+                .Where(x => x.State == AccountState.Ok)
                 .SelectMany(x => x.Payments.DefaultIfEmpty(), (ac, p) => new
                 {
                     AccountId = ac.Id,
@@ -71,7 +72,7 @@ namespace Utilities.Billing.Grains
                 Status = PaymentStatus.Completed,
             };
 
-            await _dbContext.Payments.AddAsync(payment);    
+            await _dbContext.Payments.AddAsync(payment);
             await _dbContext.SaveChangesAsync();
 
             inputInfo.CurrentValue = incomingValue;

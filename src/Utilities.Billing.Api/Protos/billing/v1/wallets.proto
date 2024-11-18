@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "Utilities.Billing.Api.Protos";
 
-import "Protos/data.proto";
+import "Protos/billing/v1/data.proto";
 import "google/api/annotations.proto";
 package stellar;
 
@@ -25,7 +25,7 @@ service StellarService
     };
   }
 
-
+  
   // Add information to the system about the consumed housing and communal services resource (electricity, water, etc.)
   rpc AddAsset(AddAssetRequest) returns (AddAssetResponse) {
     option (google.api.http) = {
@@ -45,6 +45,13 @@ service StellarService
   // Get the parameters of the registered housing and communal services resource (electricity, water, etc.)
   rpc GetAsset(GetAssetRequest) returns (GetAssetResponse) {
     option (google.api.http) = {
+      get: "/v1/assets/{assetId}"
+    };
+  }
+
+  // Get a list of assets.
+  rpc ListAssets(ListAssetsRequest) returns (ListAssetsResponse) {
+    option (google.api.http) = {
       get: "/v1/assets"
     };
   }
@@ -57,10 +64,24 @@ service StellarService
     };
   }
 
-  // Receive personal account information for the metering device. Accounts are managed by the system, consumers can only track the movements of tokens in the account.
+  // Receive personal meter account information for the metering device. Accounts are managed by the system, consumers can only track the movements of tokens in the account.
   rpc GetCustomerAccount(GetCustomerAccountRequest) returns (GetCustomerAccountResponse) {
     option (google.api.http) = {
+      get: "/v1/accounts/{customerAccountId}"
+    };
+  }
+
+  // Get a list of personal meter accounts.
+  rpc ListCustomerAccounts(ListCustomerAccountsRequest) returns (ListCustomerAccountsResponse) {
+    option (google.api.http) = {
       get: "/v1/accounts"
+    };
+  }
+
+  // Remove personal meter account. 
+  rpc DeleteCustomerAccount(DeleteCustomerAccountRequest) returns (DeleteCustomerAccountResponse) {
+    option (google.api.http) = {
+      delete: "/v1/accounts"
     };
   }
 
@@ -166,6 +187,26 @@ message GetAssetResponse
   string masterAccount = 5;
 }
 
+message ListAssetsRequest
+{
+  string tenantId = 1;
+  optional uint32 offset = 2;
+  optional uint32 limit = 3;
+
+}
+
+message ListAssetsResponse
+{
+  repeated AssetsItem items = 1;
+  int32 total = 2;
+
+  message AssetsItem {
+      string assetId = 1;
+      string assetCode = 2;
+      string issuerAccount = 3;
+  }
+}
+
 message CreateCustomerAccountRequest
 {
   string tenantId = 1;
@@ -209,6 +250,41 @@ message GetCustomerAccountResponse
   string issuer = 5;
   // System account
   string masterAccount = 6;
+
+  string state = 7;
+}
+
+message ListCustomerAccountsRequest
+{
+  string tenantId = 1;
+  optional uint32 offset = 2;
+  optional uint32 limit = 3;
+
+}
+
+message ListCustomerAccountsResponse
+{
+  repeated AccountsItem items = 1;
+  int32 total = 2;
+  
+  message AccountsItem {
+      string customerAccountId = 1;
+      string customerAccount = 2;
+      string asset = 3;
+      string deviceSerial = 4;
+      string inputCode = 5;
+      string state = 6;
+  }
+}
+
+message DeleteCustomerAccountRequest
+{
+  string tenantId = 1;
+  string customerAccountId = 2;
+}
+
+message DeleteCustomerAccountResponse
+{
 }
 
 message CreateInvoiceRequest
