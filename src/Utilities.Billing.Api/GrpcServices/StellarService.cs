@@ -100,10 +100,13 @@ public class StellarService : Protos.StellarService.StellarServiceBase
     public override async Task<ListAssetsResponse> ListAssets(ListAssetsRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
-        var command = new ListAssetsCommand { };
+        var command = new ListAssetsCommand {
+            Offset = request.HasOffset ? (int)request.Offset : default(int?),
+            Limit = request.HasLimit ? (int)request.Limit : default(int?),
+        };
 
-        var response = new ListAssetsResponse { };
         var reply = await tenant.ListAssets(command);
+        var response = new ListAssetsResponse { Total = reply.Total };
         foreach (var item in reply.Items)
         {
             response.Items.Add(new ListAssetsResponse.Types.AssetsItem
@@ -157,10 +160,13 @@ public class StellarService : Protos.StellarService.StellarServiceBase
     public override async Task<ListCustomerAccountsResponse> ListCustomerAccounts(ListCustomerAccountsRequest request, ServerCallContext context)
     {
         var tenant = _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(request.TenantId));
-        var command = new ListCustomerAccountsCommand { };
+        var command = new ListCustomerAccountsCommand {
+            Offset = request.HasOffset ? (int)request.Offset : default(int?),
+            Limit = request.HasLimit ? (int)request.Limit : default(int?),
+        };
 
-        var response = new ListCustomerAccountsResponse { };
         var reply = await tenant.ListCustomerAccounts(command);
+        var response = new ListCustomerAccountsResponse { Total = reply.Total };
         foreach(var item in reply.Items)
         {
             response.Items.Add(new ListCustomerAccountsResponse.Types.AccountsItem
@@ -170,7 +176,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
                 Asset = item.AssetCode,
                 DeviceSerial = item.DeviceSerial,
                 InputCode = item.InputCode,
-                State = (int)item.State,
+                State = item.State.ToString(),
             });
         }
 

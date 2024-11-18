@@ -19,6 +19,6 @@ public interface ITenantGrain : IGrainWithGuidKey
     Task<AddTenantReply> AddTenant(AddTenantCommand command);
     Task UpdateTenant(UpdateTenantCommand updateTenantCommand);
     Task DeleteCustomerAccount(DeleteCustomerAccountCommand command);
-    Task<ListCustomerAccountsReply> ListCustomerAccounts(ListCustomerAccountsCommand command);
-    Task<ListAssetsReply> ListAssets(ListAssetsCommand command);
+    Task<Page<AccountItem>> ListCustomerAccounts(ListCustomerAccountsCommand command);
+    Task<Page<AssetItem>> ListAssets(ListAssetsCommand command);
 }

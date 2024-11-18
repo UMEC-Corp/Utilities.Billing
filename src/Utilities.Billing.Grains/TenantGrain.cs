@@ -3,6 +3,7 @@ using System.Globalization;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
 using Utilities.Billing.Data.Entities;
+using Utilities.Common;
 
 namespace Utilities.Billing.Grains;
 public class TenantGrain : Grain, ITenantGrain
@@ -37,7 +38,7 @@ public class TenantGrain : Grain, ITenantGrain
         throw new NotImplementedException();
     }
 
-    public Task<Page<AccountTypeItem>> GetAccountTypesAsync(GetAccountTypesQuery query)
+    public Task<Contracts.Page<AccountTypeItem>> GetAccountTypesAsync(GetAccountTypesQuery query)
     {
         throw new NotImplementedException();
     }
@@ -557,11 +558,15 @@ public class TenantGrain : Grain, ITenantGrain
         return reply;
     }
 
-    public async Task<ListCustomerAccountsReply> ListCustomerAccounts(ListCustomerAccountsCommand command)
+    public async Task<Contracts.Page<AccountItem>> ListCustomerAccounts(ListCustomerAccountsCommand command)
     {
         var tenantId = this.GetPrimaryKey();
-        var accounts = await _dbContext.Accounts
-            .Where(x => x.TenantId == tenantId)
+        var query = _dbContext.Accounts.Where(x => x.TenantId == tenantId);
+        var total = await query.CountAsync();
+
+        query = query.OrderBy(x => x.Id).Skip(command.Offset ?? 0).Take(command.Limit ?? 10);
+
+        var accounts = await query
             .Select(x => new
             {
                 x.Id,
@@ -573,27 +578,32 @@ public class TenantGrain : Grain, ITenantGrain
             })
             .ToListAsync();
 
-        var reply = new ListCustomerAccountsReply();
+        var reply = new Contracts.Page<AccountItem>() { Total = total };
         foreach (var account in accounts)
         {
-            reply.Items.Add(new ListCustomerAccountsReply.Item
+            reply.Items.Add(new AccountItem
             {
                 Id = account.Id,
                 Wallet = account.Wallet,
                 AssetCode = account.AssetCode,
                 DeviceSerial = account.DeviceSerial,
                 InputCode = account.InputCode,
-                State = (ContractsAccountState)account.State
+                State = account.State
             });
         }
 
         return reply;
     }
 
-    public async Task<ListAssetsReply> ListAssets(ListAssetsCommand command)
+    public async Task<Contracts.Page<AssetItem>> ListAssets(ListAssetsCommand command)
     {
         var tenantId = this.GetPrimaryKey();
-        var assets = await _dbContext.Assets
+        var query = _dbContext.Assets.Where(x => x.TenantId == tenantId);
+        var total = await query.CountAsync();
+
+        query = query.OrderBy(x => x.Id).Skip(command.Offset ?? 0).Take(command.Limit ?? 10);
+
+        var assets = await query
             .Where(x => x.TenantId == tenantId)
             .Select(x => new
             {
@@ -603,10 +613,10 @@ public class TenantGrain : Grain, ITenantGrain
             })
             .ToListAsync();
 
-        var reply = new ListAssetsReply();
+        var reply = new Contracts.Page<AssetItem>() { Total = total };
         foreach (var asset in assets)
         {
-            reply.Items.Add(new ListAssetsReply.Item
+            reply.Items.Add(new AssetItem
             {
                 Id = asset.Id,
                 Code = asset.Code,
@@ -620,32 +630,32 @@ public class TenantGrain : Grain, ITenantGrain
     public static class Errors
     {
         public static Exception NotFound(string entityName, ICollection<long> ids) =>
-            throw new InvalidOperationException($"Entity not found {entityName}:{string.Join(",", ids)}");
+            throw new NotFoundException($"Entity not found {entityName}:{string.Join(",", ids)}");
 
         public static Exception NotFound(string entityName, ICollection<string> ids) =>
-            throw new InvalidOperationException($"Entity not found {entityName}:{string.Join(",", ids)}");
+            throw new NotFoundException($"Entity not found {entityName}:{string.Join(",", ids)}");
 
         public static Exception GrainIsNotInitialized(string grainName, Guid id) =>
-            throw new InvalidOperationException($"Grain uninitialized {grainName}:{id}");
+            throw new OperationException($"Grain uninitialized {grainName}:{id}");
 
         public static Exception EntityExists()
         {
-            throw new InvalidOperationException($"Entity already exists");
+            throw new AlreadyExistsException($"Entity already exists");
         }
 
         public static Exception BelongsAnotherTenant(string entityName, string id)
         {
-            throw new InvalidOperationException($"Entity {entityName}:{id} belongs another Tenant");
+            throw new OperationException($"Entity {entityName}:{id} belongs another Tenant");
         }
 
         internal static Exception InvalidValue(string field, string value)
         {
-            throw new InvalidOperationException($"{field} has ivalid value: {value}");
+            throw new OperationException($"{field} has ivalid value: {value}");
         }
 
         internal static Exception IncorrectState(string entityName, int state)
         {
-            throw new InvalidOperationException($"{entityName} has incorrecct state: {state}");
+            throw new OperationException($"{entityName} has incorrecct state: {state}");
         }
     }
 }

@@ -190,11 +190,15 @@ message GetAssetResponse
 message ListAssetsRequest
 {
   string tenantId = 1;
+  optional uint32 offset = 2;
+  optional uint32 limit = 3;
+
 }
 
 message ListAssetsResponse
 {
   repeated AssetsItem items = 1;
+  int32 total = 2;
 
   message AssetsItem {
       string assetId = 1;
@@ -247,25 +251,29 @@ message GetCustomerAccountResponse
   // System account
   string masterAccount = 6;
 
-  int32 state = 7;
+  string state = 7;
 }
 
 message ListCustomerAccountsRequest
 {
   string tenantId = 1;
+  optional uint32 offset = 2;
+  optional uint32 limit = 3;
+
 }
 
 message ListCustomerAccountsResponse
 {
   repeated AccountsItem items = 1;
-
+  int32 total = 2;
+  
   message AccountsItem {
       string customerAccountId = 1;
       string customerAccount = 2;
       string asset = 3;
       string deviceSerial = 4;
       string inputCode = 5;
-      int32 state = 6;
+      string state = 6;
   }
 }
 

@@ -2,7 +2,7 @@
 {
     public enum AccountState
     {
-        Unknow = 0,
+        Unknown = 0,
         Ok = 1,
         Creating = 2,
         Updating = 4,
