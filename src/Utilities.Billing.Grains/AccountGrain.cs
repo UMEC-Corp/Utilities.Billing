@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
 using Utilities.Billing.Data.Entities;
@@ -9,12 +10,14 @@ namespace Utilities.Billing.Grains
     {
         private readonly BillingDbContext _dbContext;
         private readonly IPaymentSystem _paymentSystem;
+        private readonly ILogger<DeviceGrain> _logger;
         private Dictionary<string, InputInfo> _inputStates;
 
-        public DeviceGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem)
+        public DeviceGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem, ILogger<DeviceGrain> logger)
         {
             _dbContext = dbContext;
             _paymentSystem = paymentSystem;
+            _logger = logger;
         }
 
         public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -50,6 +53,7 @@ namespace Utilities.Billing.Grains
         {
             if (!_inputStates.TryGetValue(command.InputCode, out var inputInfo))
             {
+                _logger.LogWarning("Account not found for {InputCode}", command.InputCode);
                 return MakePaymentReply.Skipped;
             }
 

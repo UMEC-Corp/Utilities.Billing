@@ -30,7 +30,8 @@ public class DeviceMessageConsumer : IConsumer<Batch<DeviceEvent>>
 
             foreach (var groupByDeviceSerial in messages.GroupBy(x => x.DeviceSerial))
             {
-                var account = _clusterClient.GetGrain<IDeviceGrain>(groupByDeviceSerial.Key);
+               using var _ = _logger.BeginScope("DeviceSerial: {DeviceSerial}", groupByDeviceSerial.Key);
+               var account = _clusterClient.GetGrain<IDeviceGrain>(groupByDeviceSerial.Key);
 
                 var inputMessages =
                     groupByDeviceSerial
