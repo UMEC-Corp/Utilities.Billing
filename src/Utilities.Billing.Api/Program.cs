@@ -10,6 +10,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Utilities.Billing.Api.GrpcServices;
 using Utilities.Billing.Api.Messaging;
 using Utilities.Billing.Api.OpenApi;
+using Utilities.Billing.Api.Services;
 using Utilities.Billing.Api.Tasks;
 using Utilities.Billing.Data;
 using Utilities.Billing.StellarWallets;
@@ -72,6 +73,9 @@ class Program
         {
             builder.Services.AddTransient<IHostedService, UpdateInvoiceStatusesTask>();
         }
+
+        builder.Services.AddScoped<ITenantService, TenantService>();    
+        builder.Services.AddScoped<IAccountsService, AccountsService>();    
 
         var app = builder.Build();
 
@@ -170,8 +174,6 @@ class Program
 
         app.UseAuthorization();
 
-        app.MapGrpcService<BillingService>();
-        app.MapGrpcService<AccountsService>();
         app.MapGrpcService<StellarService>();
         app.MapGrpcReflectionService();
         app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");

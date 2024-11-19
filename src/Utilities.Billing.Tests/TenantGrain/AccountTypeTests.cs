@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data.Entities;
+using Utilities.Billing.Grains;
 
 namespace Utilities.Billing.Tests.TenantGrain;
 public class AccountTypeTests : GrainsFixtureBase<SiloConfigurator>

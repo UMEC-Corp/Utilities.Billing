@@ -9,20 +9,16 @@ namespace Utilities.Billing.Grains
     public class DeviceGrain : Grain, IDeviceGrain
     {
         private readonly BillingDbContext _dbContext;
-        private readonly IPaymentSystem _paymentSystem;
-        private readonly ILogger<DeviceGrain> _logger;
         private Dictionary<string, InputInfo> _inputStates;
 
         public DeviceGrain(BillingDbContext dbContext, IPaymentSystem paymentSystem, ILogger<DeviceGrain> logger)
         {
             _dbContext = dbContext;
-            _paymentSystem = paymentSystem;
-            _logger = logger;
         }
 
-        public override async Task OnActivateAsync(CancellationToken cancellationToken)
+        public override Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            _inputStates = await _dbContext.Accounts
+            _inputStates = _dbContext.Accounts
                 .Where(x => x.DeviceSerial == this.GetPrimaryKeyString())
                 .Where(x => x.State == AccountState.Ok)
                 .SelectMany(x => x.Payments.DefaultIfEmpty(), (ac, p) => new
@@ -37,7 +33,7 @@ namespace Utilities.Billing.Grains
                     Amount = p == null ? 0M : p.Amount
                 })
                 .GroupBy(x => x.InputCode)
-                .ToDictionaryAsync(x => x.Key, x => new InputInfo
+                .ToDictionary(x => x.Key, x => new InputInfo
                 {
                     AccountId = x.First().AccountId,
                     Wallet = x.First().Wallet,
@@ -47,41 +43,28 @@ namespace Utilities.Billing.Grains
                     AssetIssuer = x.First().AssetIssuer,
                     CurrentValue = x.Sum(p => p.Amount),
                 });
+
+            return Task.CompletedTask;
         }
 
-        public async Task<MakePaymentReply> MakePaymentAsync(MakePaymentCommand command)
+        public Task<InputInfo?> GetInputState(string code)
         {
-            if (!_inputStates.TryGetValue(command.InputCode, out var inputInfo))
-            {
-                _logger.LogWarning("Account not found for {InputCode}", command.InputCode);
-                return MakePaymentReply.Skipped;
-            }
+            _inputStates.TryGetValue(code, out var inputInfo);
+            return Task.FromResult(inputInfo);
+        }
 
-            var incomingValue = (decimal)command.IncomingValue;
-            var amount = Math.Round(incomingValue - inputInfo.CurrentValue, 7);
+        public Task UpdateInputState(string code, InputInfo info)
+        {
+            _inputStates[code] = info;
 
-            await _paymentSystem.AddPaymentAsync(new AddPaymentCommand
-            {
-                RecieverAccountId = inputInfo.Wallet,
-                AssetCode = inputInfo.AssetCode,
-                AssetIssuerAccountId = inputInfo.AssetIssuer,
-                Amount = amount,
-            });
+            return Task.CompletedTask;
+        }
 
-            var payment = new Payment
-            {
-                AccountId = inputInfo.AccountId,
-                AssetId = inputInfo.AssetId,
-                Amount = amount,
-                Status = PaymentStatus.Completed,
-            };
+        public Task DeleteInputState(string inputCode)
+        {
+            _inputStates.Remove(inputCode);
 
-            await _dbContext.Payments.AddAsync(payment);
-            await _dbContext.SaveChangesAsync();
-
-            inputInfo.CurrentValue = incomingValue;
-
-            return new MakePaymentReply { };
+            return Task.CompletedTask;
         }
     }
 }
