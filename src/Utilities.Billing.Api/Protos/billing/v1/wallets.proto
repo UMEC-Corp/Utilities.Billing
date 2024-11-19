@@ -103,8 +103,6 @@ service StellarService
 
 message AddTenantRequest
 {
-    // Tenant Id (uuid)
-    string id = 1;
     // Tenant Name
     string name = 2;
     // AccountId in Stellar

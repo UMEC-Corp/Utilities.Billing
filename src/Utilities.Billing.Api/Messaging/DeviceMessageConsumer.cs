@@ -1,6 +1,8 @@
 ﻿using MassTransit;
 using Orleans;
+using Utilities.Billing.Api.Services;
 using Utilities.Billing.Contracts;
+using Utilities.Billing.Grains;
 using Utilities.Common.Messages;
 
 namespace Utilities.Billing.Api.Messaging;
@@ -8,11 +10,13 @@ namespace Utilities.Billing.Api.Messaging;
 public class DeviceMessageConsumer : IConsumer<Batch<DeviceEvent>>
 {
     private readonly IGrainFactory _clusterClient;
+    private readonly IAccountsService _accountsService;
     private readonly ILogger<DeviceMessageConsumer> _logger;
 
-    public DeviceMessageConsumer(ILogger<DeviceMessageConsumer> logger, IGrainFactory clusterClient)
+    public DeviceMessageConsumer(ILogger<DeviceMessageConsumer> logger, IGrainFactory clusterClient, IAccountsService accountsService)
     {
         _clusterClient = clusterClient;
+        _accountsService = accountsService;
         _logger = logger;
     }
     public async Task Consume(ConsumeContext<Batch<DeviceEvent>> context)
@@ -30,11 +34,9 @@ public class DeviceMessageConsumer : IConsumer<Batch<DeviceEvent>>
 
             foreach (var groupByDeviceSerial in messages.GroupBy(x => x.DeviceSerial))
             {
-               using var _ = _logger.BeginScope("DeviceSerial: {DeviceSerial}", groupByDeviceSerial.Key);
-               var account = _clusterClient.GetGrain<IDeviceGrain>(groupByDeviceSerial.Key);
+                using var _ = _logger.BeginScope("DeviceSerial: {DeviceSerial}", groupByDeviceSerial.Key);
 
-                var inputMessages =
-                    groupByDeviceSerial
+                var inputMessages = groupByDeviceSerial
                         .SelectMany(x =>
                             x.Values.Select(v => new { x.Time, InputCode = v.Key, InputValue = v.Value.Value }))
                         .GroupBy(x => x.InputCode);
@@ -43,8 +45,9 @@ public class DeviceMessageConsumer : IConsumer<Batch<DeviceEvent>>
                 {
                     var (code, value) = message.OrderBy(x => x.Time).Select(x => (x.InputCode, x.InputValue)).Last();
 
-                    await account.MakePaymentAsync(new MakePaymentCommand
+                    await _accountsService.MakePaymentAsync(new MakePaymentCommand
                     {
+                        DeviceSerial = groupByDeviceSerial.Key,
                         InputCode = code,
                         IncomingValue = value
                     });
