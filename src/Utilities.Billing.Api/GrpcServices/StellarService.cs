@@ -154,6 +154,7 @@ public class StellarService : Protos.StellarService.StellarServiceBase
             Asset = reply.AssetCode,
             Issuer = reply.AssetIssuer,
             MasterAccount = reply.MasterAccount,
+            State = reply.State.ToString(),
         };
     }
 

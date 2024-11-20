@@ -225,11 +225,6 @@ public class TenantService : ITenantService
         {
             throw Errors.BelongsAnotherTenant(nameof(Asset), command.CustomerAccountId);
         }
-        if (account.State != AccountState.Ok)
-        {
-            throw Errors.IncorrectState(nameof(Account), account.State.ToString());
-        }
-
 
         return new GetCustomerAccountReply
         {
@@ -238,7 +233,8 @@ public class TenantService : ITenantService
             AssetId = account.AssetId,
             AssetCode = account.Asset.Code,
             AssetIssuer = account.Asset.Issuer,
-            MasterAccount = await _paymentSystem.GetMasterAccountAsync()
+            MasterAccount = await _paymentSystem.GetMasterAccountAsync(),
+            State = account.State
         };
     }
 
@@ -312,6 +308,10 @@ public class TenantService : ITenantService
         await _dbContext.Database.BeginTransactionAsync();
 
         var customerAccount = await GetCustomerAccount(new GetCustomerAccountCommand { CustomerAccountId = command.CustomerAccountId, TenantId = command.TenantId });
+        if (customerAccount.State != AccountState.Ok)
+        {
+            throw Errors.IncorrectState(nameof(Account), customerAccount.State.ToString());
+        }
 
         var invoice = new Invoice
         {
