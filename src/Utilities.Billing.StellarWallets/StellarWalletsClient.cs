@@ -175,7 +175,7 @@ public class StellarWalletsClient : IPaymentSystem
         var payerPaymentOperation = new PaymentOperation(tenantKeyPair, asset, amount, payerAccount.KeyPair);
 
         var invoiceMemo = JsonSerializer.Serialize(new InvoiceMemo { InvoiceId = command.InvoiceId });
-        var transaction = new TransactionBuilder(masterAccount)
+        var transaction = new TransactionBuilder(deviceAccount)
                 .AddOperation(devicePaymentOperation)
                 .AddOperation(payerPaymentOperation)
                 // A memo allows you to add your own metadata to a transaction. It's
