@@ -28,7 +28,7 @@ public static class Errors
         throw new OperationException($"{field} has ivalid value: {value}");
     }
 
-    internal static Exception IncorrectState(string entityName, int state)
+    internal static Exception IncorrectState(string entityName, string state)
     {
         throw new OperationException($"{entityName} has incorrecct state: {state}");
     }

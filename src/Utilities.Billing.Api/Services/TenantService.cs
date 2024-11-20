@@ -14,12 +14,16 @@ public class TenantService : ITenantService
     private readonly BillingDbContext _dbContext;
     private readonly IPaymentSystem _paymentSystem;
     private readonly IGrainFactory _clusterClient;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<TenantService> _logger;
 
-    public TenantService(BillingDbContext dbContext, IPaymentSystem paymentSystem, IGrainFactory clusterClient)
+    public TenantService(BillingDbContext dbContext, IPaymentSystem paymentSystem, IGrainFactory clusterClient, IServiceProvider serviceProvider, ILogger<TenantService> logger)
     {
         _dbContext = dbContext;
         _paymentSystem = paymentSystem;
         _clusterClient = clusterClient;
+        _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     public async Task<AddTenantReply> AddTenant(AddTenantCommand command)
@@ -223,7 +227,7 @@ public class TenantService : ITenantService
         }
         if (account.State != AccountState.Ok)
         {
-            throw Errors.IncorrectState(nameof(Account), (int)account.State);
+            throw Errors.IncorrectState(nameof(Account), account.State.ToString());
         }
 
 
@@ -241,9 +245,10 @@ public class TenantService : ITenantService
     public async Task DeleteCustomerAccount(DeleteCustomerAccountCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
+        var accountId = new Guid(command.CustomerAccountId);
         var account = await _dbContext.Accounts
-            .Include(x => x.Asset)
-            .FirstOrDefaultAsync(x => x.Id == new Guid(command.CustomerAccountId) && x.TenantId == tenantId);
+             .Include(x => x.Asset)
+             .FirstOrDefaultAsync(x => x.Id == accountId && x.TenantId == tenantId);
         if (account == null)
         {
             throw Errors.NotFound(nameof(Account), new List<string> { command.CustomerAccountId });
@@ -251,33 +256,46 @@ public class TenantService : ITenantService
 
         if (account.State != AccountState.Ok)
         {
-            throw Errors.IncorrectState(nameof(Account), (int)account.State);
+            throw Errors.IncorrectState(nameof(Account), account.State.ToString());
         }
-
         account.State = AccountState.Deleting;
         await _dbContext.SaveChangesAsync();
 
         _ = Task.Run(async () =>
         {
+            using var scope = _serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<BillingDbContext>();
+            Account? deletingAccount = null;
             try
             {
+                deletingAccount = await dbContext.Accounts.Include(x => x.Asset).FirstOrDefaultAsync(x => x.Id == accountId && x.TenantId == tenantId);
+                if (deletingAccount == null)
+                {
+                    throw Errors.NotFound(nameof(Account), new List<string> { command.CustomerAccountId });
+                }
+
                 await _paymentSystem.DeleteCustomerAccountAsync(new DeleteCustomerAccount
                 {
-                    CustomerAccountId = account.Wallet,
-                    AssetCode = account.Asset.Code,
-                    AssetIssuerAccountId = account.Asset.Issuer
+                    CustomerAccountId = deletingAccount.Wallet,
+                    AssetCode = deletingAccount.Asset.Code,
+                    AssetIssuerAccountId = deletingAccount.Asset.Issuer
                 });
 
-                account.State = AccountState.Deleted;
-                await _dbContext.SaveChangesAsync();
+                deletingAccount.State = AccountState.Deleted;
+                await dbContext.SaveChangesAsync();
 
-                var deviceGrain = _clusterClient.GetGrain<IDeviceGrain>(account.DeviceSerial);
-                await deviceGrain.DeleteInputState(account.InputCode);
+                var deviceGrain = _clusterClient.GetGrain<IDeviceGrain>(deletingAccount.DeviceSerial);
+                await deviceGrain.DeleteInputState(deletingAccount.InputCode);
             }
             catch (Exception ex)
             {
-                account.State = AccountState.Ok;  // ??
-                await _dbContext.SaveChangesAsync();
+                _logger.LogError(ex, "Failed to delete account {AccountId}", accountId);
+
+                if (deletingAccount != null)
+                {
+                    deletingAccount.State = AccountState.Ok;  // ??
+                    await dbContext.SaveChangesAsync();
+                }
             }
         });
 
