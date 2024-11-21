@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Runtime;
 using System.Text.Json;
 using Utilities.Billing.Contracts;
+using Asset = StellarDotnetSdk.Assets.Asset;
 
 namespace Utilities.Billing.StellarWallets;
 public class StellarWalletsClient : IPaymentSystem
@@ -33,7 +34,7 @@ public class StellarWalletsClient : IPaymentSystem
         var recieverKeyPair = KeyPair.FromAccountId(command.RecieverAccountId);
         var recieverAccount = await server.Accounts.Account(recieverKeyPair.AccountId);
 
-        var asset = StellarDotnetSdk.Assets.Asset.CreateNonNativeAsset(command.AssetCode, command.AssetIssuerAccountId);
+        var asset = Asset.CreateNonNativeAsset(command.AssetCode, command.AssetIssuerAccountId);
         var amount = command.Amount.ToString(CultureInfo.InvariantCulture);
 
         var paymentOperation = new PaymentOperation(recieverKeyPair, asset, amount);
@@ -45,6 +46,45 @@ public class StellarWalletsClient : IPaymentSystem
         await SendTran(server, transaction);
     }
 
+
+    public async Task DeleteCustomerAccountAsync(DeleteCustomerAccount command)
+    {
+        UseNetwork();
+        var server = new Server(_options.CurrentValue.HorizonUrl);
+
+        var masterKeyPair = KeyPair.FromSecretSeed(_options.CurrentValue.SecretSeed);
+        var masterAccount = await server.Accounts.Account(masterKeyPair.AccountId);
+
+        var senderKeyPair = KeyPair.FromAccountId(command.CustomerAccountId);
+        var senderAccount = await server.Accounts.Account(senderKeyPair.AccountId);
+        var balances = senderAccount.Balances;
+
+        var transactionBuilder = new TransactionBuilder(senderAccount);
+
+        var balance = balances.FirstOrDefault(x => x.AssetCode == command.AssetCode && x.AssetIssuer == command.AssetIssuerAccountId);
+        if (balance != null)
+        {
+            var asset = Asset.CreateNonNativeAsset(command.AssetCode, command.AssetIssuerAccountId);
+            var amount = balance.BalanceString;
+            if (double.TryParse(amount, CultureInfo.InvariantCulture, out var amountNum) && amountNum > 0)
+            {
+                var paymentOperation = new PaymentOperation(masterKeyPair, asset, amount);
+                transactionBuilder.AddOperation(paymentOperation);
+            }
+
+            var changeTrustOperation = new ChangeTrustOperation(asset, "0");
+            transactionBuilder.AddOperation(changeTrustOperation);
+        }
+
+        var accountMergeOperation = new AccountMergeOperation(masterKeyPair);
+        var transaction = transactionBuilder
+            .AddOperation(accountMergeOperation)
+            .Build();
+
+        transaction.Sign(masterKeyPair);
+
+        await SendTran(server, transaction);
+    }
 
     public async Task<string> CreateWalletAsync(CreateWalletCommand command)
     {
@@ -135,7 +175,7 @@ public class StellarWalletsClient : IPaymentSystem
         var payerPaymentOperation = new PaymentOperation(tenantKeyPair, asset, amount, payerAccount.KeyPair);
 
         var invoiceMemo = JsonSerializer.Serialize(new InvoiceMemo { InvoiceId = command.InvoiceId });
-        var transaction = new TransactionBuilder(masterAccount)
+        var transaction = new TransactionBuilder(deviceAccount)
                 .AddOperation(devicePaymentOperation)
                 .AddOperation(payerPaymentOperation)
                 // A memo allows you to add your own metadata to a transaction. It's
@@ -159,7 +199,14 @@ public class StellarWalletsClient : IPaymentSystem
 
     private void UseNetwork()
     {
-        Network.UseTestNetwork();
+        if (_options.CurrentValue.UseTestnet)
+        {
+            Network.UseTestNetwork();
+        }
+        else
+        {
+            Network.UsePublicNetwork();
+        }
     }
 
     private async Task SendTran(Server server, StellarDotnetSdk.Transactions.Transaction transaction)

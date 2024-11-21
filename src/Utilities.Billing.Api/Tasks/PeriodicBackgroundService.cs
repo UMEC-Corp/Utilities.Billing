@@ -18,7 +18,7 @@
 
             await ExecuteInWrap();
 
-            using PeriodicTimer timer = new(TimeSpan.FromMinutes(_settings.Period));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(_settings.Period));
             try
             {
                 while (await timer.WaitForNextTickAsync(stoppingToken))

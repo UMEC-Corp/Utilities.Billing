@@ -1,48 +1,58 @@
 ﻿using MassTransit;
 using Orleans;
+using Utilities.Billing.Api.Services;
 using Utilities.Billing.Contracts;
+using Utilities.Billing.Grains;
 using Utilities.Common.Messages;
 
 namespace Utilities.Billing.Api.Messaging;
 
-public class DeviceMessageConsumer : IConsumer<Batch<DeviceMessageReceived>>
+public class DeviceMessageConsumer : IConsumer<Batch<DeviceEvent>>
 {
     private readonly IGrainFactory _clusterClient;
+    private readonly IAccountsService _accountsService;
     private readonly ILogger<DeviceMessageConsumer> _logger;
 
-    public DeviceMessageConsumer(ILogger<DeviceMessageConsumer> logger, IGrainFactory clusterClient)
+    public DeviceMessageConsumer(ILogger<DeviceMessageConsumer> logger, IGrainFactory clusterClient, IAccountsService accountsService)
     {
         _clusterClient = clusterClient;
+        _accountsService = accountsService;
         _logger = logger;
     }
-    public Task Consume(ConsumeContext<Batch<DeviceMessageReceived>> context)
+    public async Task Consume(ConsumeContext<Batch<DeviceEvent>> context)
     {
         try
         {
             var messages = context.Message
-                .Where(x => x.Message.Subject == "input")
+                .Where(x => x.Message.EventName == "sensor_data")
                 .Select(x => x.Message).ToArray();
 
             if (!messages.Any())
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            foreach (var groupByDeviceId in messages.GroupBy(x => x.DeviceSerial))
+            foreach (var groupByDeviceSerial in messages.GroupBy(x => x.DeviceSerial))
             {
-                var account = _clusterClient.GetGrain<IDeviceGrain>(groupByDeviceId.Key);
+                using var _ = _logger.BeginScope("DeviceSerial: {DeviceSerial}", groupByDeviceSerial.Key);
 
-                foreach (var message in groupByDeviceId.OrderBy(x => x.Timestamp))
+                var inputMessages = groupByDeviceSerial
+                        .SelectMany(x =>
+                            x.Values.Select(v => new { x.Time, InputCode = v.Key, InputValue = v.Value.Value }))
+                        .GroupBy(x => x.InputCode);
+
+                foreach (var message in inputMessages)
                 {
-                    account.MakePayment(new MakePaymentCommand
+                    var (code, value) = message.OrderBy(x => x.Time).Select(x => (x.InputCode, x.InputValue)).Last();
+
+                    await _accountsService.MakePaymentAsync(new MakePaymentCommand
                     {
-                        InputCode = message.Item,
-                        IncomingValue = message.Payload
+                        DeviceSerial = groupByDeviceSerial.Key,
+                        InputCode = code,
+                        IncomingValue = value
                     });
                 }
             }
-
-            return Task.CompletedTask; 
         }
         catch (Exception ex)
         {

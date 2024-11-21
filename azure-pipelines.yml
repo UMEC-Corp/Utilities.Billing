@@ -23,9 +23,10 @@ variables:
   buildContext: src
   dockerfile: Utilities.Billing.Api/Dockerfile # this should be relative to the build context
   ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-    k8sns: umec-master
+    k8sns: umec-production
   ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
     k8sns: umec-dev
+
 stages:
 - stage: Build
   displayName: Build image
@@ -62,9 +63,27 @@ stages:
           echo "buildah push --creds $REG_USER:*** --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):latest"
           buildah push --creds $REG_USER:$REG_PASSWD --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):latest 
 
+- stage: Deploy
+  displayName: Deploy Image
+  jobs:
+  - job: DeployToDevStage
+    displayName: Deploy Image To Dev Stage
+    condition:  eq(variables['Build.SourceBranchName'], 'develop')
+    pool: "Self-Hosted On K8s"
+    steps:
     - task: CmdLine@2
       displayName: Deploy Helm Chart to the dev cluster
-      condition:  eq(variables['Build.SourceBranchName'], 'develop')
+
       inputs:
         script: |
           helm upgrade $(imageName) ./.helm -n $(k8sns) --set netcore-service.image.tag=$(tag) --values ./.helm/values.$(Build.SourceBranchName).yaml
+  - job: DeployToProduction
+    displayName: Deploy Image To Production
+    condition:  eq(variables['Build.SourceBranchName'], 'master')
+    pool: "UMEC Production BE Self-Hosted"
+    steps:
+    - task: CmdLine@2
+      displayName: Deploy Helm Chart to the production cluster
+      inputs:
+        script: |
+          helm upgrade $(imageName) ./.helm -i -n $(k8sns) --set netcore-service.image.tag=$(tag) --values ./.helm/values.$(Build.SourceBranchName).yaml
