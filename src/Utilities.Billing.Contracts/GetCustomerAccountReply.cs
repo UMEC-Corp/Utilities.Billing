@@ -1,4 +1,6 @@
-﻿namespace Utilities.Billing.Contracts;
+﻿using Utilities.Billing.Data.Entities;
+
+namespace Utilities.Billing.Contracts;
 
 [GenerateSerializer]
 public class GetCustomerAccountReply
@@ -15,4 +17,5 @@ public class GetCustomerAccountReply
     public string AssetIssuer { get; set; }
     [Id(5)]
     public string MasterAccount { get; set; }
+    public AccountState State { get; set; }
 }

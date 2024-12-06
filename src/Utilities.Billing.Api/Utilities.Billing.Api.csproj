@@ -9,14 +9,7 @@
 		<DockerfileContext>..\..</DockerfileContext>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Remove="Protos\accounts.proto" />
-		<None Remove="Protos\billing.proto" />
-		<None Remove="Protos\data.proto" />
-		<None Remove="Protos\wallets.proto" />
-	</ItemGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="Grpc.Tools" Version="2.59.0">
@@ -48,10 +41,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Protos\wallets.proto" GrpcServices="Server" />
-		<Protobuf Include="Protos\data.proto" />
-		<Protobuf Include="Protos\accounts.proto" />
-		<Protobuf Include="Protos\billing.proto" />
+		<Protobuf Include="Protos\billing\v1\wallets.proto" GrpcServices="Server" />
+		<Protobuf Include="Protos\billing\v1\data.proto" />
+		<Protobuf Include="Protos\billing\v1\accounts.proto" />
+		<Protobuf Include="Protos\billing\v1\billing.proto" />
 	</ItemGroup>
 
 </Project>
