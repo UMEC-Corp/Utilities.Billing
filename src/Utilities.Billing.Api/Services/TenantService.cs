@@ -12,15 +12,19 @@ namespace Utilities.Billing.Api.Services;
 public class TenantService : ITenantService
 {
     private readonly BillingDbContext _dbContext;
-    private readonly IPaymentSystem _paymentSystem;
+    private readonly IPaymentSystemFactory _paymentSystemFactory;
     private readonly IGrainFactory _clusterClient;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<TenantService> _logger;
 
-    public TenantService(BillingDbContext dbContext, IPaymentSystem paymentSystem, IGrainFactory clusterClient, IServiceProvider serviceProvider, ILogger<TenantService> logger)
+    public TenantService(BillingDbContext dbContext,
+                         IPaymentSystemFactory paymentSystemFactory,
+                         IGrainFactory clusterClient,
+                         IServiceProvider serviceProvider,
+                         ILogger<TenantService> logger)
     {
         _dbContext = dbContext;
-        _paymentSystem = paymentSystem;
+        _paymentSystemFactory = paymentSystemFactory;
         _clusterClient = clusterClient;
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -28,7 +32,13 @@ public class TenantService : ITenantService
 
     public async Task<AddTenantReply> AddTenant(AddTenantCommand command)
     {
-        var tenant = new Tenant() { Name = command.Name, Wallet = command.Account };
+        var tenant = new Tenant()
+        {
+            Name = command.Name,
+            Wallet = command.Account,
+            WalletType = command.WalletType,
+        };
+
         await _dbContext.Tenants.AddAsync(tenant);
         await _dbContext.SaveChangesAsync();
 
@@ -51,10 +61,11 @@ public class TenantService : ITenantService
 
         tenant.Name = command.Name;
         tenant.Wallet = command.Account;
+        tenant.WalletType = command.WalletType;
 
         await _dbContext.SaveChangesAsync();
 
-        await tenantGrain.UpdateState(new TenantGrainState { Name = tenant.Name, Wallet = tenant.Wallet });
+        await tenantGrain.UpdateState(new TenantGrainState { Name = tenant.Name, Wallet = tenant.Wallet, WalletType = tenant.WalletType });
     }
 
     public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
@@ -66,11 +77,12 @@ public class TenantService : ITenantService
             throw Errors.EntityExists();
         }
 
-        await _paymentSystem.AddAssetAsync(new AddStellarAssetCommand
+        var ps = await GetPaymentSystemAsync(command.TenantId);
+        await ps.AddAssetAsync(new AddStellarAssetCommand
         {
             AssetCode = command.AssetCode,
             IssuerAccountId = command.Issuer,
-            ReceiverAccountId = await _paymentSystem.GetMasterAccountAsync(),
+            ReceiverAccountId = await ps.GetMasterAccountAsync(),
         });
 
         var asset = new Asset
@@ -98,6 +110,12 @@ public class TenantService : ITenantService
         return new AddAssetReply { Id = asset.Id };
     }
 
+    private async Task<IPaymentSystem> GetPaymentSystemAsync(string tenantId)
+    {
+        var tenantState = await _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(tenantId)).GetState();
+        return _paymentSystemFactory.GetPaymentSystem(tenantState.WalletType);
+    }
+
     private Guid GetTenantId(string id)
     {
         return _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(id)).GetPrimaryKey();
@@ -115,12 +133,13 @@ public class TenantService : ITenantService
             throw Errors.BelongsAnotherTenant(nameof(Asset), command.Id);
         }
 
+        var ps = await GetPaymentSystemAsync(command.TenantId);
         var response = new GetAssetReply
         {
             Id = asset.Id,
             Code = asset.Code,
             IssuerAccount = asset.Issuer,
-            MasterAccount = await _paymentSystem.GetMasterAccountAsync(),
+            MasterAccount = await ps.GetMasterAccountAsync(),
         };
 
         response.ModelCodes.Add(await _dbContext.EquipmentModels.Where(x => x.AssetId == asset.Id).Select(x => x.Code).ToListAsync());
@@ -169,15 +188,15 @@ public class TenantService : ITenantService
         {
             throw Errors.EntityExists();
         }
-
-        var wallet = await _paymentSystem.CreateWalletAsync(new CreateWalletCommand
+        var ps = await GetPaymentSystemAsync(command.TenantId);
+        var wallet = await ps.CreateWalletAsync(new CreateWalletCommand
         {
             CreateMuxed = command.CreateMuxed,
         });
 
         var asset = await GetAsset(new GetAssetCommand { Id = command.AssetId, TenantId = command.TenantId });
 
-        await _paymentSystem.AddAssetAsync(new AddStellarAssetCommand
+        await ps.AddAssetAsync(new AddStellarAssetCommand
         {
             AssetCode = asset.Code,
             IssuerAccountId = asset.IssuerAccount,
@@ -226,6 +245,7 @@ public class TenantService : ITenantService
             throw Errors.BelongsAnotherTenant(nameof(Asset), command.CustomerAccountId);
         }
 
+        var ps = await GetPaymentSystemAsync(command.TenantId);
         return new GetCustomerAccountReply
         {
             Id = account.Id,
@@ -233,7 +253,7 @@ public class TenantService : ITenantService
             AssetId = account.AssetId,
             AssetCode = account.Asset.Code,
             AssetIssuer = account.Asset.Issuer,
-            MasterAccount = await _paymentSystem.GetMasterAccountAsync(),
+            MasterAccount = await ps.GetMasterAccountAsync(),
             State = account.State
         };
     }
@@ -270,7 +290,8 @@ public class TenantService : ITenantService
                     throw Errors.NotFound(nameof(Account), new List<string> { command.CustomerAccountId });
                 }
 
-                await _paymentSystem.DeleteCustomerAccountAsync(new DeleteCustomerAccount
+                var ps = await GetPaymentSystemAsync(command.TenantId);
+                await ps.DeleteCustomerAccountAsync(new DeleteCustomerAccount
                 {
                     CustomerAccountId = deletingAccount.Wallet,
                     AssetCode = deletingAccount.Asset.Code,
@@ -325,7 +346,8 @@ public class TenantService : ITenantService
 
         try
         {
-            var xdr = await _paymentSystem.CreateInvoiceXdr(new CreateInvoiceXdrCommand
+            var ps = await GetPaymentSystemAsync(command.TenantId);
+            var xdr = await ps.CreateInvoiceXdr(new CreateInvoiceXdrCommand
             {
                 InvoiceId = invoice.Id,
                 Amount = amount,

@@ -29,7 +29,8 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         var reply = await _tenantService.AddTenant(new AddTenantCommand
         {
             Name = request.Name,
-            Account = request.Account
+            Account = request.Account,
+            WalletType = Enum.Parse<WalletType>(request.WalletType)
         });
 
         return new AddTenantResponse { Id = reply.Id.ToString() };
@@ -41,7 +42,8 @@ public class StellarService : Protos.StellarService.StellarServiceBase
         {
             TenantId = request.Id,
             Name = request.Name,
-            Account = request.Account
+            Account = request.Account,
+            WalletType = Enum.Parse<WalletType>(request.WalletType)
         });
         return new UpdateTenantResponse();
     }

@@ -20,6 +20,85 @@ public class TonWalletsClient : IPaymentSystem
         _settings = settings;
     }
 
+    public Task AddAssetAsync(AddStellarAssetCommand command)
+    {
+        // В отличии от Стеллара, здесь не требуется производить каких-либо операций с кошельками.
+        return Task.CompletedTask;
+    }
+
+    public async Task<string> CreateWalletAsync(CreateWalletCommand command)
+    {
+        var tonClient = GetClient();
+
+        var (masterWallet, masterKey) = GetMasteWallet();
+        var (newWallet, newKey) = CreateNewWallet();
+
+        var muiltisigWallet = await CreateMultisigWallet(tonClient, masterWallet, masterKey, newWallet);
+
+        return muiltisigWallet.Address.ToString();
+    }
+
+    public async Task AddPaymentAsync(AddPaymentCommand command)
+    {
+        var tonClient = GetClient();
+
+        var options = new JettonTransferOptions()
+        {
+            Amount = new Coins(100), // jetton amount to send, for ex 100 jettons
+            Destination = new Address(command.RecieverAccountId), // receiver
+            ForwardPayload = GetStringPayload("jetton transfer test")
+        };
+        var jettonTransfer = JettonWallet.CreateTransferRequest(options);
+
+        var jettonWallet = new Address(command.AssetIssuerAccountId);
+        var (masterW, masterK) = GetMasteWallet();
+
+        uint? seqno = await tonClient.Wallet.GetSeqno(masterW.Address);
+        var message = masterW.CreateTransferMessage(new[]
+        {
+                new WalletTransfer
+                {
+                    Message = new InternalMessage(new()
+                    {
+                        Info = new IntMsgInfo(new()
+                        {
+                            Dest = jettonWallet,
+                            Value = new Coins(0.01) // amount in TONs to send
+                        }),
+                        Body = jettonTransfer
+                    }),
+                    Mode = 1
+                }
+            }, seqno ?? 0).Sign(masterK);
+
+        await SendMessage(tonClient, message.Cell);
+    }
+
+
+    public Task<string> GetMasterAccountAsync()
+    {
+        var (w, k) = GetMasteWallet();
+        return w.Address.ToString(AddressType.Raw);
+    }
+
+    public Task<string> CreateInvoiceXdr(CreateInvoiceXdrCommand command)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ICollection<InvoiceInfomation>> GetInvoicesInformationAsync(IEnumerable<long> invoiceIds)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteCustomerAccountAsync(DeleteCustomerAccount command)
+    {
+        throw new NotImplementedException();
+    }
+
+
+
+
     private TonClient GetClient()
     {
         var tonClientParams = new HttpParameters
@@ -30,6 +109,10 @@ public class TonWalletsClient : IPaymentSystem
 
         return new TonClient(TonClientType.HTTP_TONCENTERAPIV2, tonClientParams);
     }
+
+
+
+
 
 
     public async Task<string> CreateWallet(CreateWalletCommand command)
@@ -334,35 +417,7 @@ public class TonWalletsClient : IPaymentSystem
         await SendMessage(tonClient, cellMessage);
     }
 
-    public Task AddAssetAsync(AddStellarAssetCommand command)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task AddPaymentAsync(AddPaymentCommand command)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<string> CreateInvoiceXdr(CreateInvoiceXdrCommand command)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<string> CreateWalletAsync(CreateWalletCommand command)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<string> GetMasterAccountAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ICollection<InvoiceInfomation>> GetInvoicesInformationAsync(IEnumerable<long> invoiceIds)
-    {
-        throw new NotImplementedException();
-    }
+   
 }
 
 

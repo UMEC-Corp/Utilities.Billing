@@ -14,6 +14,8 @@ using Utilities.Billing.Api.Services;
 using Utilities.Billing.Api.Tasks;
 using Utilities.Billing.Data;
 using Utilities.Billing.StellarWallets;
+using Utilities.Billing.TonWallets;
+using Utilities.Billing.TonWallets.Extensions;
 using Utilities.Common.Consul;
 using Utilities.Common.Data;
 using Utilities.Common.Grpc;
@@ -38,6 +40,8 @@ class Program
         });
 
         builder.Services.UseStellarWallets(builder.Configuration, StellarWalletsSettings.SectionName);
+        builder.Services.UseTonWallets(builder.Configuration, TonWalletsSettings.SectionName);
+        builder.Services.AddSingleton<IPaymentSystemFactory, PaymentSystemFactory>();
 
         builder.Host.UseSerilog((context, config) =>
         {

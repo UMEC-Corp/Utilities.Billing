@@ -1,4 +1,6 @@
-﻿namespace Utilities.Billing.Grains;
+﻿using Utilities.Billing.Data.Entities;
+
+namespace Utilities.Billing.Grains;
 
 [GenerateSerializer]
 public class TenantGrainState
@@ -7,4 +9,6 @@ public class TenantGrainState
     public string Name { get; set; }
     [Id(1)]
     public string Wallet { get; set; }
+    [Id(3)]
+    public WalletType WalletType { get; set; }
 }

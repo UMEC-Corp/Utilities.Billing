@@ -107,6 +107,8 @@ message AddTenantRequest
     string name = 2;
     // AccountId in Stellar
     string account = 3;
+    // 1 - Stellar, 2 - TON
+    string walletType = 4;
 }
 message AddTenantResponse 
 {
@@ -121,6 +123,8 @@ message UpdateTenantRequest
     string name = 2;
     // AccountId in Stellar
     string account = 3;
+    // 1 - Stellar, 2 - TON
+    string walletType = 4;
 }
 message UpdateTenantResponse 
 {

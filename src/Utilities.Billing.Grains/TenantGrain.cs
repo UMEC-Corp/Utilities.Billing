@@ -20,7 +20,7 @@ public partial class TenantGrain : Grain, ITenantGrain
     {
         _tenantState = _dbContext.Tenants
             .Where(x => x.Id == this.GetPrimaryKey())
-            .Select(x => new TenantGrainState { Name = x.Name, Wallet = x.Wallet })
+            .Select(x => new TenantGrainState { Name = x.Name, Wallet = x.Wallet, WalletType = x.WalletType })
             .FirstOrDefault();
 
         return Task.CompletedTask;

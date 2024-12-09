@@ -38,6 +38,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Utilities.Billing.Grains\Utilities.Billing.Grains.csproj" />
 		<ProjectReference Include="..\Utilities.Billing.StellarWallets\Utilities.Billing.StellarWallets.csproj" />
+		<ProjectReference Include="..\Utilities.Billing.TonWallets\Utilities.Billing.TonWallets.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
