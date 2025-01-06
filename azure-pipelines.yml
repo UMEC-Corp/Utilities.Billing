@@ -17,7 +17,6 @@ variables:
     tag: $['$(major).$(minor).$(revision).$(Build.BuildId)-$(Build.SourceBranchName)']
 
   nugetUrl: https://pkgs.dev.azure.com/deviotcloud/UMEC/_packaging/umec-artifacts/nuget/v2
-  dockerRegistry: registry.deviot.cloud
 
   imageName: utilities-billing
   buildContext: src
@@ -38,7 +37,7 @@ stages:
     - task: CmdLine@2
       inputs:
         script: |
-          echo "Building docker://$(dockerRegistry)/$(imageName):$(tag)..."
+          echo "Building docker://$(registry-server)/$(imageName):$(tag)..."
     - task: CmdLine@2
       displayName: Build Container Image
       inputs:
@@ -58,10 +57,10 @@ stages:
         REG_PASSWD: $(registry-password)
       inputs:
         script: |
-          echo "buildah push --creds $REG_USER:*** --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):$(tag)"
-          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):$(tag)
-          echo "buildah push --creds $REG_USER:*** --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):latest"
-          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(dockerRegistry)/$(imageName):latest 
+          echo "buildah push --creds $REG_USER:*** --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):$(tag)"
+          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):$(tag)
+          echo "buildah push --creds $REG_USER:*** --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):latest"
+          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):latest 
 
 - stage: Deploy
   displayName: Deploy Image
