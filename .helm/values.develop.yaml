@@ -21,7 +21,7 @@ netcore-service:
     enabled: true
 
 postgresql:
-  enabled: true
+  enabled: false
   auth:
     database: "billing"
     password: "billing"
