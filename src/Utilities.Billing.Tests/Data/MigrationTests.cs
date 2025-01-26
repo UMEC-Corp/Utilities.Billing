@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Utilities.Billing.Data;
 
 namespace Utilities.Billing.Tests.Data;
@@ -11,8 +13,14 @@ public class MigrationTests
     [Test]
     public async Task MigrationsShouldSucceedOnEmptyDatabase()
     {
+        var services = new ServiceCollection().AddLogging(logging =>
+        {
+            logging.AddConsole();
+        }).BuildServiceProvider();
+
         var options = new DbContextOptionsBuilder<BillingDbContext>()
-            .UseSqlite("Data Source=:memory:")
+            .UseSqlite("Data Source=:memory:", b => b.MigrationsAssembly("Utilities.Billing.Tests"))
+            .UseLoggerFactory(services.GetRequiredService<ILoggerFactory>())
             .Options;
 
         await using var dbContext = new BillingDbContext(options);
@@ -20,6 +28,12 @@ public class MigrationTests
         await dbContext.Database.OpenConnectionAsync();
 
         await dbContext.Database.MigrateAsync();
+
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+        var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync();
+
+        Assert.That(appliedMigrations, Is.Not.Empty);
+        Assert.That(pendingMigrations, Is.Empty);
 
         await dbContext.Database.CloseConnectionAsync();
     }
