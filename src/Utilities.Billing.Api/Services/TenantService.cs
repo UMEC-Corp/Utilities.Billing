@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Orleans;
 using System.Globalization;
 using Utilities.Billing.Contracts;
 using Utilities.Billing.Data;
@@ -9,6 +7,9 @@ using Utilities.Billing.Grains;
 
 namespace Utilities.Billing.Api.Services;
 
+/// <summary>
+/// Provides tenant-related operations, including tenant management, asset management, customer account management, and invoice processing.
+/// </summary>
 public class TenantService : ITenantService
 {
     private readonly BillingDbContext _dbContext;
@@ -17,6 +18,14 @@ public class TenantService : ITenantService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<TenantService> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TenantService"/> class.
+    /// </summary>
+    /// <param name="dbContext">The billing database context.</param>
+    /// <param name="paymentSystem">The payment system service.</param>
+    /// <param name="clusterClient">The Orleans grain factory.</param>
+    /// <param name="serviceProvider">The service provider for dependency resolution.</param>
+    /// <param name="logger">The logger instance.</param>
     public TenantService(BillingDbContext dbContext, IPaymentSystem paymentSystem, IGrainFactory clusterClient, IServiceProvider serviceProvider, ILogger<TenantService> logger)
     {
         _dbContext = dbContext;
@@ -26,6 +35,14 @@ public class TenantService : ITenantService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Adds a new tenant to the system.
+    /// </summary>
+    /// <param name="command">The command containing tenant details.</param>
+    /// <returns>The reply containing the new tenant's ID.</returns>
+    /// <remarks>
+    /// Creates a new <c>Tenant</c> entity and saves it to the database. Initializes the corresponding Orleans grain for the tenant and returns the tenant's ID.
+    /// </remarks>
     public async Task<AddTenantReply> AddTenant(AddTenantCommand command)
     {
         var tenant = new Tenant() { Name = command.Name, Wallet = command.Account };
@@ -38,6 +55,14 @@ public class TenantService : ITenantService
         return new AddTenantReply { Id = tenant.Id };
     }
 
+    /// <summary>
+    /// Updates an existing tenant's information.
+    /// </summary>
+    /// <param name="command">The command containing updated tenant details.</param>
+    /// <remarks>
+    /// Finds the tenant by ID, updates its name and wallet, saves changes to the database, and updates the corresponding Orleans grain state.
+    /// Throws an error if the tenant is not found.
+    /// </remarks>
     public async Task UpdateTenant(UpdateTenantCommand command)
     {
         var tenantId = Guid.Parse(command.TenantId);
@@ -57,6 +82,14 @@ public class TenantService : ITenantService
         await tenantGrain.UpdateState(new TenantGrainState { Name = tenant.Name, Wallet = tenant.Wallet });
     }
 
+    /// <summary>
+    /// Adds a new asset for a tenant.
+    /// </summary>
+    /// <param name="command">The command containing asset details.</param>
+    /// <returns>The reply containing the new asset's ID.</returns>
+    /// <remarks>
+    /// Checks if the asset already exists for the tenant. If not, adds a trustline for the asset using the payment system, creates the asset entity, and associates equipment models with it. Saves all changes to the database and returns the asset's ID.
+    /// </remarks>
     public async Task<AddAssetReply> AddAsset(AddAssetCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
@@ -98,11 +131,14 @@ public class TenantService : ITenantService
         return new AddAssetReply { Id = asset.Id };
     }
 
-    private Guid GetTenantId(string id)
-    {
-        return _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(id)).GetPrimaryKey();
-    }
-
+    /// <summary>
+    /// Retrieves asset details for a tenant.
+    /// </summary>
+    /// <param name="command">The command containing asset and tenant IDs.</param>
+    /// <returns>The asset reply with asset details.</returns>
+    /// <remarks>
+    /// Finds the asset by ID and verifies tenant ownership. If found, returns asset details including associated model codes and master account information. Throws an error if not found or if the asset belongs to another tenant.
+    /// </remarks>
     public async Task<GetAssetReply> GetAsset(GetAssetCommand command)
     {
         var asset = await _dbContext.Assets.FindAsync(new Guid(command.Id));
@@ -128,6 +164,13 @@ public class TenantService : ITenantService
         return response;
     }
 
+    /// <summary>
+    /// Updates an asset and its associated equipment models.
+    /// </summary>
+    /// <param name="command">The command containing updated asset and model codes.</param>
+    /// <remarks>
+    /// Finds the asset by ID and verifies tenant ownership. Removes equipment models not present in the update, adds new models, and saves changes to the database. Throws an error if the asset is not found or belongs to another tenant.
+    /// </remarks>
     public async Task UpdateAsset(UpdateAssetCommand command)
     {
         var asset = await _dbContext.Assets.FindAsync(new Guid(command.Id));
@@ -158,6 +201,14 @@ public class TenantService : ITenantService
         await _dbContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Creates a new customer account for a tenant.
+    /// </summary>
+    /// <param name="command">The command containing customer account details.</param>
+    /// <returns>The reply containing the new customer account's ID.</returns>
+    /// <remarks>
+    /// Checks for existing accounts with the same device serial and input code. If none exist, creates a new wallet using the payment system, adds a trustline for the asset, creates the account entity, and updates the device grain with input state. Saves all changes and returns the account ID.
+    /// </remarks>
     public async Task<CreateCustomerAccountReply> CreateCustomerAccount(CreateCustomerAccountCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
@@ -211,6 +262,14 @@ public class TenantService : ITenantService
         return new CreateCustomerAccountReply { AccountId = account.Id };
     }
 
+    /// <summary>
+    /// Retrieves customer account details for a tenant.
+    /// </summary>
+    /// <param name="command">The command containing customer account and tenant IDs.</param>
+    /// <returns>The reply with customer account details.</returns>
+    /// <remarks>
+    /// Finds the customer account by ID, verifies tenant ownership, and returns account details including wallet, asset, and state. Throws an error if not found or if the account belongs to another tenant.
+    /// </remarks>
     public async Task<GetCustomerAccountReply> GetCustomerAccount(GetCustomerAccountCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
@@ -238,6 +297,13 @@ public class TenantService : ITenantService
         };
     }
 
+    /// <summary>
+    /// Deletes a customer account for a tenant.
+    /// </summary>
+    /// <param name="command">The command containing customer account and tenant IDs.</param>
+    /// <remarks>
+    /// Marks the account as deleting, then asynchronously attempts to remove the account from the payment system and database. If successful, marks the account as deleted and updates the device grain. If an error occurs, logs the error and restores the account state.
+    /// </remarks>
     public async Task DeleteCustomerAccount(DeleteCustomerAccountCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
@@ -289,7 +355,7 @@ public class TenantService : ITenantService
 
                 if (deletingAccount != null)
                 {
-                    deletingAccount.State = AccountState.Ok;  // ??
+                    deletingAccount.State = AccountState.Ok;
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -298,6 +364,14 @@ public class TenantService : ITenantService
         return;
     }
 
+    /// <summary>
+    /// Creates a new invoice for a customer account.
+    /// </summary>
+    /// <param name="command">The command containing invoice details.</param>
+    /// <returns>The reply containing the invoice XDR.</returns>
+    /// <remarks>
+    /// Validates the invoice amount and customer account state. Creates a new invoice entity, generates the XDR using the payment system, updates the invoice status, and commits the transaction. Rolls back the transaction if an error occurs.
+    /// </remarks>
     public async Task<CreateInvoiceReply> CreateInvoice(CreateInvoiceCommand command)
     {
         var tenantState = await _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(command.TenantId)).GetState();
@@ -352,9 +426,16 @@ public class TenantService : ITenantService
             await _dbContext.Database.RollbackTransactionAsync();
             throw;
         }
-
     }
 
+    /// <summary>
+    /// Lists invoices for a customer account within a specified period.
+    /// </summary>
+    /// <param name="command">The command containing filter parameters.</param>
+    /// <returns>The reply containing a list of invoice items.</returns>
+    /// <remarks>
+    /// Retrieves invoices for the specified customer account and tenant within the given time period. Maps each invoice to a reply item including transaction ID, amount, XDR, and processed status.
+    /// </remarks>
     public async Task<ListInvoicesReply> ListInvoices(ListInvoicesCommand command)
     {
         var start = DateTimeOffset.FromUnixTimeSeconds((long)command.PeriodFrom);
@@ -388,6 +469,14 @@ public class TenantService : ITenantService
         return reply;
     }
 
+    /// <summary>
+    /// Lists customer accounts for a tenant with pagination.
+    /// </summary>
+    /// <param name="command">The command containing pagination and tenant information.</param>
+    /// <returns>A paged list of customer account items.</returns>
+    /// <remarks>
+    /// Retrieves customer accounts for the specified tenant, applies pagination, and maps each account to a reply item with relevant details.
+    /// </remarks>
     public async Task<Page<AccountItem>> ListCustomerAccounts(ListCustomerAccountsCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
@@ -425,6 +514,14 @@ public class TenantService : ITenantService
         return reply;
     }
 
+    /// <summary>
+    /// Lists assets for a tenant with pagination.
+    /// </summary>
+    /// <param name="command">The command containing pagination and tenant information.</param>
+    /// <returns>A paged list of asset items.</returns>
+    /// <remarks>
+    /// Retrieves assets for the specified tenant, applies pagination, and maps each asset to a reply item with relevant details.
+    /// </remarks>
     public async Task<Page<AssetItem>> ListAssets(ListAssetsCommand command)
     {
         var tenantId = GetTenantId(command.TenantId);
@@ -455,5 +552,18 @@ public class TenantService : ITenantService
         }
 
         return reply;
+    }
+
+    /// <summary>
+    /// Gets the tenant ID as a <see cref="Guid"/> from a string identifier.
+    /// </summary>
+    /// <param name="id">The tenant ID as a string.</param>
+    /// <returns>The tenant ID as a <see cref="Guid"/>.</returns>
+    /// <remarks>
+    /// Uses the Orleans grain factory to resolve the primary key for the tenant grain.
+    /// </remarks>
+    private Guid GetTenantId(string id)
+    {
+        return _clusterClient.GetGrain<ITenantGrain>(Guid.Parse(id)).GetPrimaryKey();
     }
 }

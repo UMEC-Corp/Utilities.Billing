@@ -23,7 +23,7 @@ public class Invoice : DbEntityWithLongKey
 
 public enum InvoiceStatus
 {
-    Unknow = 0,
+    Unknown = 0,
     New = 1,
     Pending = 2,
     Completed = 3,
