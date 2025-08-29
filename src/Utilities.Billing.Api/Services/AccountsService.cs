@@ -69,7 +69,6 @@ public class AccountsService : IAccountsService
         var inputInfo = await deviceGrain.GetInputState(command.InputCode);
         if (inputInfo == null)
         {
-            _logger.LogInformation("Account not found for {InputCode}", command.InputCode);
             return MakePaymentReply.Skipped;
         }
 
