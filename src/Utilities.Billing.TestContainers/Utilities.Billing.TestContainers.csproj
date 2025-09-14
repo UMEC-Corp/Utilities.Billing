@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net8.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <PackageId>Utilities.Workflows.TestContainers</PackageId>
+	  <Version>1.0.0</Version>
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Utilities.Common.TestTools" Version="1.0.88-develop" />
+  </ItemGroup>
+
+</Project>
