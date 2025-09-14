@@ -1,88 +1,25 @@
+# Azure Pipelines for Utilities.Billing.Api using shared template
+
 trigger:
 - develop
 - master
 
 resources:
-- repo: self
+  repositories:
+  - repository: self
+  - repository: ai_pipelines
+    type: github
+    endpoint: dmitrynadolin
+    name: dmitrynadolin/ai-pipelines
+    ref: develop
+  - repository: backend_configs
+    type: github
+    endpoint: dmitrynadolin
+    name: UMEC-Corp/backend-configs
+    ref: develop
 
-variables:
-  major: '1'
-  minor: '0'
-  revision: $[counter(variables['minor'], 1)] # This will get reset every time minor gets bumped.
-
-
-  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-    tag: $['$(major).$(minor).$(revision).$(Build.BuildId)']
-  ${{ else }}:
-    tag: $['$(major).$(minor).$(revision).$(Build.BuildId)-$(Build.SourceBranchName)']
-
-  nugetUrl: https://pkgs.dev.azure.com/deviotcloud/UMEC/_packaging/umec-artifacts/nuget/v2
-
-  imageName: utilities-billing
-  buildContext: src
-  dockerfile: Utilities.Billing.Api/Dockerfile # this should be relative to the build context
-  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-    k8sns: umec-production
-  ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
-    k8sns: umec-dev
-
-stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool: "Self-Hosted On K8s"
-    steps:
-    - task: CmdLine@2
-      inputs:
-        script: |
-          echo "Building docker://$(registry-server)/$(imageName):$(tag)..."
-    - task: CmdLine@2
-      displayName: Build Container Image
-      inputs:
-        script: |
-          buildah bud \
-            --build-arg nuget_password=$(System.AccessToken) \
-            --build-arg nuget_user=user \
-            --build-arg nuget_url=$(nugetUrl) \
-            --isolation chroot \
-            -t $(imageName):temp-$(Build.SourceBranchName) \
-            -f $(dockerfile) \
-            $(buildContext)
-    - task: CmdLine@2
-      displayName: Push Container Image Registry
-      env:
-        REG_USER: $(registry-user)
-        REG_PASSWD: $(registry-password)
-      inputs:
-        script: |
-          echo "buildah push --creds $REG_USER:*** --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):$(tag)"
-          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):$(tag)
-          echo "buildah push --creds $REG_USER:*** --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):latest"
-          buildah push --creds $REG_USER:$REG_PASSWD --tls-verify --rm $(imageName):temp-$(Build.SourceBranchName) docker://$(registry-server)/$(imageName):latest 
-
-- stage: Deploy
-  displayName: Deploy Image
-  jobs:
-  - job: DeployToDevStage
-    displayName: Deploy Image To Dev Stage
-    condition:  eq(variables['Build.SourceBranchName'], 'develop')
-    pool: "Self-Hosted On K8s"
-    steps:
-    - task: CmdLine@2
-      displayName: Deploy Helm Chart to the dev cluster
-
-      inputs:
-        script: |
-          helm upgrade $(imageName) ./.helm -n $(k8sns) --set netcore-service.image.tag=$(tag) --values ./.helm/values.$(Build.SourceBranchName).yaml
-  - job: DeployToProduction
-    displayName: Deploy Image To Production
-    condition:  eq(variables['Build.SourceBranchName'], 'master')
-    pool: "UMEC Production BE Self-Hosted"
-    steps:
-    - task: CmdLine@2
-      displayName: Deploy Helm Chart to the production cluster
-      inputs:
-        script: |
-          helm upgrade $(imageName) ./.helm -i -n $(k8sns) --set netcore-service.image.tag=$(tag) --values ./.helm/values.$(Build.SourceBranchName).yaml
+extends:
+  template: /build/azure-pipelines-template.yml@backend_configs
+  parameters:
+    serviceName: 'utilities-billing'
+    dockerfile: 'Utilities.Billing.Api/Dockerfile'
