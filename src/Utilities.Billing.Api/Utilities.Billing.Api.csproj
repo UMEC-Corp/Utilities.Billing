@@ -32,9 +32,9 @@
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
 		<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="7.1.0" />
-		<PackageReference Include="Utilities.Common.Consul" Version="1.0.85-develop" />
+		<PackageReference Include="Utilities.Common.Consul" Version="1.0.91-develop" />
 		<PackageReference Include="Utilities.Common.Grpc" Version="1.0.85-develop" />
-		<PackageReference Include="Utilities.Common.Messages" Version="1.0.85-develop" />
+		<PackageReference Include="Utilities.Common.Messages" Version="1.0.91-develop" />
 	</ItemGroup>
 
 	<ItemGroup>
