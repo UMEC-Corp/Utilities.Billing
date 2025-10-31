@@ -34,7 +34,7 @@
 		<PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="7.1.0" />
 		<PackageReference Include="Utilities.Common.Consul" Version="1.0.91-develop" />
 		<PackageReference Include="Utilities.Common.Grpc" Version="1.0.85-develop" />
-		<PackageReference Include="Utilities.Common.Messages" Version="1.0.91-develop" />
+		<PackageReference Include="Utilities.Common.Messages" Version="1.0.92" />
 	</ItemGroup>
 
 	<ItemGroup>
