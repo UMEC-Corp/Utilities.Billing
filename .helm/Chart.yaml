@@ -31,4 +31,4 @@ dependencies:
   
   - name: netcore-service
     version: "0.20.0"
-    repository: oci://registry.deviot.cloud/helm-charts
+    repository: oci://registry.digitalocean.com/deviot/helm-charts
