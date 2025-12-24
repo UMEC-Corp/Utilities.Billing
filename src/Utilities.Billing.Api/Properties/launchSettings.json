@@ -18,7 +18,7 @@
     "CoverageProfile": {
       "commandName": "Executable",
       "executablePath": "dotnet-coverage",
-      "commandLineArgs": "collect --output-format cobertura $(TargetDir)$(TargetName).exe",
+      "commandLineArgs": "collect --output-format cobertura --output $(TargetDir)$(TargetName).coverage.xml $(TargetDir)$(TargetName).exe",
       "environmentVariables": {
         "CONSUL_HTTP_ADDR": "localhost:8503",
         "ASPNETCORE_ENVIRONMENT": "Development",
