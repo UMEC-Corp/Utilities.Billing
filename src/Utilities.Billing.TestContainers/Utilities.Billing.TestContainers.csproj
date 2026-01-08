@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Utilities.Common.TestTools" Version="1.0.88-develop" />
+	  <PackageReference Include="Utilities.Common.TestTools" Version="1.0.96-develop" />
   </ItemGroup>
 
 </Project>
