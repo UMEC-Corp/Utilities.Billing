@@ -3,7 +3,7 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 12.12.10
 - name: netcore-service
-  repository: oci://registry.deviot.cloud/helm-charts
-  version: 0.20.0
-digest: sha256:a193dd64b2e48d44d4bbb33605110576c8a6dab4d47434173d04095e897d6134
-generated: "2024-12-08T10:29:09.1201755+02:00"
+  repository: oci://registry.digitalocean.com/deviot/helm-charts
+  version: 0.22.0
+digest: sha256:b6c33eb6d5676b0196894ca9782299e50f92c6241e87fe9a5f9ce96117b12d1b
+generated: "2026-02-16T21:43:31.0103582+02:00"
