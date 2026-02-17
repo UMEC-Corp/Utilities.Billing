@@ -27,5 +27,15 @@ RUN dotnet publish "Utilities.Billing.Api.csproj" -c Release -o /app/publish /p:
 
 FROM base AS final
 WORKDIR /app
+
+ARG app_version
+ARG git_commit
+ARG build_number
+
 COPY --from=publish /app/publish .
+
+ENV app_version=$app_version
+ENV git_commit=$git_commit
+ENV build_number=$build_number
+
 ENTRYPOINT ["dotnet", "Utilities.Billing.Api.dll"]

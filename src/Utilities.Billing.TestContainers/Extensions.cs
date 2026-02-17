@@ -29,7 +29,7 @@ public static class Extensions
              { "ConnectionStrings__BillingDbContext", postgresConnectionString },
         };
 
-        var builder = new ContainerBuilder().WithImage("deviot.azurecr.io/utilities-billing:latest")
+        var builder = new ContainerBuilder().WithImage("deviot.azurecr.io/utilities-billing:develop-latest")
             .WithNetwork(context.Network)
             .WithName("billing")
             .WithPortBinding(ServiceConstants.DefaultGrpcPort, true)
