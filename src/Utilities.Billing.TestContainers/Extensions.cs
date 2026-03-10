@@ -29,7 +29,11 @@ public static class Extensions
              { "ConnectionStrings__BillingDbContext", postgresConnectionString },
         };
 
-        var builder = new ContainerBuilder().WithImage("deviot.azurecr.io/utilities-billing:develop-latest")
+        var imageRegistry = Environment.GetEnvironmentVariable("TEST_CONTAINERS_IMAGE_REGISTRY") ?? "registry.digitalocean.com/deviot";
+        var imageTag = Environment.GetEnvironmentVariable("TEST_CONTAINERS_IMAGE_TAG") ?? "develop-latest";
+        var imageName = $"{imageRegistry}/utilities-billing:{imageTag}";
+
+        var builder = new ContainerBuilder().WithImage(imageName)
             .WithNetwork(context.Network)
             .WithName("billing")
             .WithPortBinding(ServiceConstants.DefaultGrpcPort, true)
