@@ -43,7 +43,27 @@ public static class Extensions
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(ServiceConstants.DefaultGrpcPort));
 
         var container = builder.Build();
-        await container.StartAsync();
+
+        try
+        {
+            await container.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            var logDetails = string.Empty;
+            try
+            {
+                var (stdout, stderr) = await container.GetLogsAsync();
+                logDetails = $"\n--- STDOUT ---\n{stdout}\n--- STDERR ---\n{stderr}";
+            }
+            catch
+            {
+                // Container was never created (e.g. image pull failed) — logs unavailable
+            }
+
+            throw new Exception(
+                $"Container 'billing' failed to start: {ex.Message}{logDetails}", ex);
+        }
 
         var service = new GrpcService(container);
         context.AddService(service);
