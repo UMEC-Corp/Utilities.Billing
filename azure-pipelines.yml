@@ -7,14 +7,9 @@ trigger:
 resources:
   repositories:
   - repository: self
-  - repository: ai_pipelines
-    type: github
-    endpoint: dmitrynadolin
-    name: dmitrynadolin/ai-pipelines
-    ref: develop
   - repository: backend_configs
     type: github
-    endpoint: dmitrynadolin
+    endpoint: github-umec-corp
     name: UMEC-Corp/backend-configs
     ref: develop
 
