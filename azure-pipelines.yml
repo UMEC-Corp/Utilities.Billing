@@ -4,6 +4,9 @@ trigger:
 - develop
 - master
 
+# Do not build pull requests: one Mac mini agent, PR builds queue ahead of develop/master.
+pr: none
+
 resources:
   repositories:
   - repository: self
